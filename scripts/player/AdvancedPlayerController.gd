@@ -2,12 +2,14 @@ class_name AdvancedPlayerController
 extends CharacterBody3D
 
 ## Высокотехнологичный контроллер игрока от первого лица для "Эхо Чащи" (Godot 4.6-dev)
-## Включает: реалистичный тактический фонарик с двойным конусом (луч + рассеянный свет),
-## 3D-компас в руке, физику инерции таежной грязи, систему травмы и тряски камеры (Camera Shake).
+## Включает: тактический фонарик с ультрафиолетовым UV-режимом [V], бросок фальшфейеров [G],
+## 3D-компас в руке, физику инерции таежной грязи и систему травмы/тряски камеры (Camera Shake).
 
 signal stamina_changed(current: float, max_val: float)
 signal flashlight_battery_changed(current: float, max_val: float)
 signal flashlight_toggled(is_on: bool)
+signal uv_mode_toggled(is_uv: bool)
+signal flare_count_changed(count: int)
 signal interaction_target_changed(prompt_text: String)
 signal player_stepped(surface_type: StringName, is_sprinting: bool)
 
@@ -52,13 +54,20 @@ signal player_stepped(surface_type: StringName, is_sprinting: bool)
 @export var max_shake_pitch: float = 0.06
 @export var max_shake_roll: float = 0.08
 
-# --- ФОНАРИК ---
-@export_group("Фонарик и Батарея")
+# --- ФОНАРИК И УЛЬТРАФИОЛЕТ ---
+@export_group("Фонарик и Ультрафиолет")
 @export var max_battery_capacity: float = 100.0
 @export var battery_drain_rate: float = 0.15 # ед./сек
 @export var max_light_energy: float = 4.2
 @export var critical_battery_threshold: float = 15.0
 @export var flashlight_sway_smoothing: float = 14.0
+@export var normal_light_color: Color = Color(1.0, 0.96, 0.88, 1.0)
+@export var uv_light_color: Color = Color(0.48, 0.15, 0.95, 1.0)
+
+# --- ПРИПАСЫ И ФАЛЬШФЕЙЕРЫ ---
+@export_group("Фальшфейеры")
+@export var active_flare_scene: PackedScene
+@export var starting_flares: int = 2
 
 # --- ИНТЕРАКЦИИ ---
 @export_group("Интеракции")
@@ -94,6 +103,8 @@ var _is_crouching: bool = false
 
 var _current_battery: float = 100.0
 var _is_flashlight_on: bool = true
+var _is_uv_mode: bool = false
+var _flare_count: int = 2
 var _flicker_noise_seed: float = 0.0
 
 var _bob_timer: float = 0.0
@@ -112,9 +123,11 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	_current_stamina = max_stamina
 	_current_battery = max_battery_capacity
+	_flare_count = starting_flares
 
 	_setup_interaction_casts()
 	_update_flashlight_visuals(0.0)
+	flare_count_changed.emit(_flare_count)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -124,12 +137,18 @@ func _unhandled_input(event: InputEvent) -> void:
 		
 	elif event.is_action_pressed("flashlight_toggle"):
 		toggle_flashlight()
-		
+
+	elif event.is_action_pressed("uv_toggle"):
+		toggle_uv_mode()
+
 	elif event.is_action_pressed("interact"):
 		_try_interact()
 		
 	elif event.is_action_pressed("crouch_toggle"):
 		_is_crouching = not _is_crouching
+
+	elif event is InputEventKey and event.is_pressed() and event.keycode == KEY_G:
+		throw_flare()
 
 
 func _physics_process(delta: float) -> void:
@@ -141,6 +160,7 @@ func _physics_process(delta: float) -> void:
 	_process_flashlight_sway(delta)
 	_process_flashlight_battery(delta)
 	_process_interactions()
+	_process_uv_illumination()
 
 
 func _rotate_view(mouse_delta: Vector2) -> void:
@@ -231,7 +251,6 @@ func _process_head_bob(delta: float) -> void:
 	_previous_step_phase = current_sine_val
 
 
-# --- СИСТЕМА ТРАВМЫ И ТРЯСКИ КАМЕРЫ ---
 func add_trauma(amount: float) -> void:
 	_trauma = clampf(_trauma + amount, 0.0, 1.0)
 
@@ -292,6 +311,11 @@ func _update_flashlight_visuals(delta: float) -> void:
 	if flashlight_spill != null:
 		flashlight_spill.visible = true
 
+	var current_color: Color = uv_light_color if _is_uv_mode else normal_light_color
+	flashlight_spot.light_color = current_color
+	if flashlight_spill != null:
+		flashlight_spill.light_color = current_color
+
 	var battery_ratio: float = _current_battery / max_battery_capacity
 	var base_intensity: float = max_light_energy * pow(battery_ratio, 1.2)
 
@@ -321,6 +345,67 @@ func toggle_flashlight() -> void:
 
 	flashlight_toggled.emit(_is_flashlight_on)
 	_update_flashlight_visuals(0.0)
+
+
+func toggle_uv_mode() -> void:
+	_is_uv_mode = not _is_uv_mode
+	if flashlight_click_audio != null:
+		flashlight_click_audio.pitch_scale = 1.3 if _is_uv_mode else 0.9
+		flashlight_click_audio.play()
+
+	uv_mode_toggled.emit(_is_uv_mode)
+	_update_flashlight_visuals(0.0)
+
+	if display_hud_notification:
+		display_hud_notification("Ультрафиолетовый режим: " + ("ВКЛЮЧЕН" if _is_uv_mode else "ВЫКЛЮЧЕН"))
+
+
+# --- СКАНИРОВАНИЕ UV РУН В КОНУСЕ СВЕТА ---
+func _process_uv_illumination() -> void:
+	var uv_markers = get_tree().get_nodes_in_group("uv_markers")
+	if uv_markers.is_empty():
+		return
+
+	var is_uv_active = _is_flashlight_on and _is_uv_mode and _current_battery > 0.0
+
+	for marker in uv_markers:
+		if marker is Node3D and marker.has_method("set_uv_illuminated"):
+			var dist = camera.global_position.distance_to((marker as Node3D).global_position)
+			if is_uv_active and dist <= 18.0:
+				var to_marker = ((marker as Node3D).global_position - camera.global_position).normalized()
+				var forward = -camera.global_transform.basis.z
+				var angle = rad_to_deg(forward.angle_to(to_marker))
+				(marker as Node3D).call("set_uv_illuminated", angle < 38.0)
+			else:
+				(marker as Node3D).call("set_uv_illuminated", false)
+
+
+# --- МЕХАНИКА БРОСКА ФАЛЬШФЕЙЕРА ---
+func throw_flare() -> void:
+	if _flare_count <= 0:
+		display_hud_notification("Нет сигнальных фальшфейеров!")
+		return
+
+	_flare_count -= 1
+	flare_count_changed.emit(_flare_count)
+
+	var flare_scene = active_flare_scene
+	if flare_scene == null:
+		flare_scene = load("res://scenes/props/ActiveFlare.tscn") as PackedScene
+
+	if flare_scene != null:
+		var flare_inst = flare_scene.instantiate() as RigidBody3D
+		if flare_inst != null:
+			get_parent().add_child(flare_inst)
+			flare_inst.global_position = camera.global_position + (-camera.global_transform.basis.z * 0.6)
+			var throw_dir = (-camera.global_transform.basis.z + Vector3(0, 0.25, 0)).normalized()
+			flare_inst.apply_impulse(throw_dir * 12.0)
+			display_hud_notification("Фальшфейер зажжен и брошен!")
+
+
+func add_flares(count: int) -> void:
+	_flare_count += count
+	flare_count_changed.emit(_flare_count)
 
 
 func restore_flashlight_battery(amount: float) -> bool:

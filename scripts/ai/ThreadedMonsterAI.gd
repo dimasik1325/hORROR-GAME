@@ -2,7 +2,7 @@ class_name ThreadedMonsterAI
 extends CharacterBody3D
 
 ## Искусственный Интеллект лесного чудовища "Сплетенный" (Godot 4.6-dev)
-## Включает: FSM, систему преследования, динамический авойданс и механику атаки/скримера при сближении.
+## Включает: FSM, систему преследования, реакцию на свет фальшфейеров (оглушение/отступление) и атаку/скример.
 
 enum State {
 	IDLE,        ## Ожидание/засада в чаще
@@ -10,7 +10,8 @@ enum State {
 	INVESTIGATE, ## Проверка источника подозрительного шума или последнего места видимости
 	CHASE,       ## Прямое агрессивное преследование игрока
 	SEARCH,      ## Процедурное сканирование сектора после потери цели (5 сек)
-	ATTACK       ## Скример и атака на поражение
+	ATTACK,      ## Скример и атака на поражение
+	STUNNED      ## Оглушение и отступление от алого огня фальшфейера
 }
 
 # --- НАСТРОЙКИ СКОРОСТИ И ФИЗИКИ ---
@@ -18,6 +19,7 @@ enum State {
 @export var patrol_speed: float = 2.4
 @export var investigate_speed: float = 4.2
 @export var chase_speed: float = 7.0
+@export var retreat_speed: float = 5.5
 @export var acceleration: float = 8.5
 @export var rotation_speed: float = 6.0
 @export var gravity: float = 9.81
@@ -54,12 +56,14 @@ var player_ref: CharacterBody3D = null
 var _current_waypoint_index: int = 0
 var _idle_timer: float = 0.0
 var _search_timer: float = 0.0
+var _stun_timer: float = 0.0
 var _search_rotation_angle: float = 0.0
 
 var _last_known_player_position: Vector3 = Vector3.ZERO
 var _has_line_of_sight: bool = false
 var _target_velocity: Vector3 = Vector3.ZERO
 var _has_triggered_jumpscare: bool = false
+var _flare_danger_pos: Vector3 = Vector3.ZERO
 
 
 func _ready() -> void:
@@ -107,13 +111,15 @@ func _physics_process(delta: float) -> void:
 			_process_state_search(delta)
 		State.ATTACK:
 			_process_state_attack(delta)
+		State.STUNNED:
+			_process_state_stunned(delta)
 
 	_apply_movement_and_rotation(delta)
 
 
 # --- СЕНСОРНЫЙ АНАЛИЗ ---
 func _evaluate_sensory_perception() -> void:
-	if player_ref == null or current_state == State.ATTACK:
+	if player_ref == null or current_state == State.ATTACK or current_state == State.STUNNED:
 		_has_line_of_sight = false
 		return
 
@@ -137,7 +143,7 @@ func _evaluate_sensory_perception() -> void:
 	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
 		eyes_pos,
 		player_head_pos,
-		1 # Слой мира
+		1
 	)
 	var hit: Dictionary = space_state.intersect_ray(query)
 
@@ -145,7 +151,7 @@ func _evaluate_sensory_perception() -> void:
 		_has_line_of_sight = true
 		_last_known_player_position = player_ref.global_position
 
-		if current_state != State.CHASE:
+		if current_state != State.CHASE and current_state != State.STUNNED:
 			_trigger_chase_scream()
 			_change_state(State.CHASE)
 	else:
@@ -154,7 +160,7 @@ func _evaluate_sensory_perception() -> void:
 
 # --- ОБРАБОТКА ШУМА (СЛУХ) ---
 func _on_global_noise_heard(origin: Vector3, radius: float, _noise_type: StringName) -> void:
-	if current_state == State.CHASE or current_state == State.ATTACK:
+	if current_state == State.CHASE or current_state == State.ATTACK or current_state == State.STUNNED:
 		return
 
 	var distance: float = global_position.distance_to(origin)
@@ -163,6 +169,27 @@ func _on_global_noise_heard(origin: Vector3, radius: float, _noise_type: StringN
 	if distance <= effective_radius:
 		_last_known_player_position = origin
 		_change_state(State.INVESTIGATE)
+
+
+# --- РЕАКЦИЯ НА ФАЛЬШФЕЙЕР (ОГЛУШЕНИЕ И БЕГСТВО) ---
+func stun_by_flare(flare_position: Vector3, duration: float = 6.0) -> void:
+	_flare_danger_pos = flare_position
+	_stun_timer = duration
+	_has_line_of_sight = false
+	_trigger_chase_scream()
+	_change_state(State.STUNNED)
+
+
+func _process_state_stunned(delta: float) -> void:
+	_stun_timer -= delta
+	
+	# Бегство в противоположную сторону от огня
+	var flee_dir = (global_position - _flare_danger_pos).normalized()
+	flee_dir.y = 0.0
+	_target_velocity = flee_dir * retreat_speed
+
+	if _stun_timer <= 0.0:
+		_change_state(State.PATROL)
 
 
 # --- ЛОГИКА СОСТОЯНИЙ (FSM) ---
@@ -177,7 +204,6 @@ func _process_state_idle(delta: float) -> void:
 
 func _process_state_patrol(_delta: float) -> void:
 	if patrol_waypoints.is_empty():
-		# Если точек нет — патрулируем по радиусу вокруг старта
 		_change_state(State.IDLE)
 		return
 
@@ -209,7 +235,6 @@ func _process_state_chase(_delta: float) -> void:
 	if player_ref != null:
 		var distance_to_player = global_position.distance_to(player_ref.global_position)
 		
-		# МЕХАНИКА СКРИМЕРА / НАПАДЕНИЯ: Когда монстр догнал игрока!
 		if distance_to_player <= attack_reach_distance and not _has_triggered_jumpscare:
 			_change_state(State.ATTACK)
 			return
@@ -298,6 +323,8 @@ func _change_state(new_state: State) -> void:
 			nav_agent.max_speed = investigate_speed
 		State.ATTACK:
 			nav_agent.max_speed = 0.0
+		State.STUNNED:
+			nav_agent.max_speed = retreat_speed
 		_:
 			pass
 

@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3 uid="uid://mainworld_horror_01"]
+[gd_scene load_steps=36 format=3 uid="uid://mainworld_horror_01"]
 
 [ext_resource type="Script" path="res://scripts/world/MainWorld.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/world/WorldStreamer.gd" id="2_streamer"]
@@ -26,6 +26,8 @@
 [ext_resource type="PackedScene" path="res://scenes/props/BioluminescentMushroom.tscn" id="24_shroom"]
 [ext_resource type="PackedScene" path="res://scenes/world/WeatherSystem.tscn" id="25_weather"]
 [ext_resource type="PackedScene" path="res://scenes/ui/JournalUI.tscn" id="26_journal"]
+[ext_resource type="PackedScene" path="res://scenes/props/FlarePickup.tscn" id="27_flare"]
+[ext_resource type="PackedScene" path="res://scenes/props/UVHiddenMarker.tscn" id="28_uvrune"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_night"]
 sky_top_color = Color(0.04, 0.08, 0.15, 1)
@@ -294,6 +296,27 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.2, 8.0, 1.2)
 
 [node name="Pills_Jeep" parent="Interactables" instance=ExtResource("21_pills")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.4, 0.85, -40.6)
+
+[node name="Flare_Cabin" parent="Interactables" instance=ExtResource("27_flare")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 0.35, -20.0)
+
+[node name="Flare_Watchtower" parent="Interactables" instance=ExtResource("27_flare")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24.5, 8.0, 2.5)
+
+[node name="Flare_Sawmill" parent="Interactables" instance=ExtResource("27_flare")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 34.0, 0.45, -14.0)
+
+[node name="UVRune_Cabin" parent="Interactables" instance=ExtResource("28_uvrune")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.8, 1.5, -18.0)
+rune_text = "«ЗДЕСЬ НЕТ ВЫХОДА. ДЕТЕКТИВ, ВЫ СОЖГЛИ ВСЕ МОСТЫ.»"
+
+[node name="UVRune_Megalith" parent="Interactables" instance=ExtResource("28_uvrune")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34.0, 1.8, 20.0)
+rune_text = "«ЖЕРТВОПРИНОШЕНИЕ СОВЕРШЕНО. ТЕНИ В ЧАЩЕ ПОДЧИНЯЮТСЯ ТЕБЕ, УЭЙН.»"
+
+[node name="UVRune_Crypt" parent="Interactables" instance=ExtResource("28_uvrune")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -41.8, 1.6, -53.2)
+rune_text = "«ПЯТАЯ ПЕЧАТЬ СЛОМАНА. ИСТИНА СПРЯТАНА В СЕРДЦЕ СКЛЕПА.»"
 
 [node name="Waypoints" type="Node3D" parent="."]
 

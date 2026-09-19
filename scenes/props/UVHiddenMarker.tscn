@@ -1,0 +1,25 @@
+[gd_scene load_steps=5 format=3 uid="uid://uv_marker_horror_01"]
+
+[ext_resource type="Script" path="res://scripts/world/UVHiddenMarker.gd" id="1_uv"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_uv_glow"]
+shading_mode = 0
+albedo_color = Color(0.7, 0.2, 1.0, 1)
+
+[sub_resource type="QuadMesh" id="QuadMesh_rune_symbol"]
+material = SubResource("StandardMaterial3D_uv_glow")
+size = Vector2(0.8, 0.8)
+
+[node name="UVHiddenMarker" type="Node3D" groups=["uv_markers"]]
+script = ExtResource("1_uv")
+
+[node name="RuneMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.05)
+visible = false
+mesh = SubResource("QuadMesh_rune_symbol")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+visible = false
+light_color = Color(0.65, 0.15, 0.95, 1)
+light_energy = 1.6
+omni_range = 3.5
