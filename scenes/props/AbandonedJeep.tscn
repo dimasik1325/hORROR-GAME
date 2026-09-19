@@ -1,0 +1,87 @@
+[gd_scene load_steps=10 format=3 uid="uid://jeep_horror_01"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jeep_body"]
+albedo_color = Color(0.18, 0.22, 0.16, 1)
+metallic = 0.6
+roughness = 0.7
+
+[sub_resource type="BoxMesh" id="BoxMesh_jeep_chassis"]
+material = SubResource("StandardMaterial3D_jeep_body")
+size = Vector3(2.2, 1.2, 4.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cabin_glass"]
+albedo_color = Color(0.1, 0.15, 0.18, 1)
+metallic = 0.9
+roughness = 0.2
+
+[sub_resource type="BoxMesh" id="BoxMesh_cabin_top"]
+material = SubResource("StandardMaterial3D_cabin_glass")
+size = Vector3(1.9, 0.9, 2.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_tire"]
+albedo_color = Color(0.08, 0.08, 0.08, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_wheel"]
+material = SubResource("StandardMaterial3D_tire")
+top_radius = 0.45
+bottom_radius = 0.45
+height = 0.35
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_headlight"]
+albedo_color = Color(1, 0.95, 0.8, 1)
+emission_enabled = true
+emission = Color(1, 0.9, 0.7, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_headlight_lens"]
+material = SubResource("StandardMaterial3D_headlight")
+radius = 0.15
+height = 0.1
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_jeep_col"]
+size = Vector3(2.4, 2.2, 4.6)
+
+[node name="AbandonedJeep" type="StaticBody3D"]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+shape = SubResource("BoxShape3D_jeep_col")
+
+[node name="Chassis" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.85, 0)
+mesh = SubResource("BoxMesh_jeep_chassis")
+
+[node name="CabinTop" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, -0.4)
+mesh = SubResource("BoxMesh_cabin_top")
+
+[node name="Wheel_FL" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, -1.15, 0.45, 1.3)
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="Wheel_FR" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 1.15, 0.45, 1.3)
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="Wheel_BL" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, -1.15, 0.45, -1.3)
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="Wheel_BR" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 1.15, 0.45, -1.3)
+mesh = SubResource("CylinderMesh_wheel")
+
+[node name="Headlight_Left" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.75, 0.9, 2.22)
+mesh = SubResource("SphereMesh_headlight_lens")
+
+[node name="SpotLight3D" type="SpotLight3D" parent="Headlight_Left"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.1)
+light_color = Color(1, 0.92, 0.78, 1)
+light_energy = 3.5
+shadow_enabled = true
+spot_range = 25.0
+spot_angle = 42.0

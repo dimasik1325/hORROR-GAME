@@ -1,7 +1,7 @@
 extends Node3D
 
 ## Корневой скрипт сцены MainWorld для "Эхо Чащи" (Godot 4.6-dev)
-## Инициализирует связи между подсистемами, освещением, пост-процессингом, HUD и менеджером Безумия.
+## Инициализирует связи между подсистемами, освещением, пост-процессингом, HUD, ИИ и менеджером Безумия.
 
 @onready var world_environment: WorldEnvironment = $WorldEnvironment
 @onready var post_process_rect: ColorRect = $PostProcessLayer/PostProcessRect
@@ -9,11 +9,13 @@ extends Node3D
 @onready var player: CharacterBody3D = $Player
 @onready var enemy: CharacterBody3D = $Enemy
 @onready var hud: CanvasLayer = $HUD
+@onready var waypoints_container: Node3D = $Waypoints
 
 
 func _ready() -> void:
 	_register_with_sanity_manager()
 	_connect_hud_signals()
+	_setup_enemy_patrol_route()
 
 
 func _register_with_sanity_manager() -> void:
@@ -39,3 +41,13 @@ func _connect_hud_signals() -> void:
 			player.flashlight_battery_changed.connect(hud.update_battery)
 		if player.has_signal("interaction_target_changed") and hud.has_method("set_interaction_prompt"):
 			player.interaction_target_changed.connect(hud.set_interaction_prompt)
+
+
+func _setup_enemy_patrol_route() -> void:
+	if enemy != null and waypoints_container != null:
+		var wps: Array[Node3D] = []
+		for child in waypoints_container.get_children():
+			if child is Node3D:
+				wps.append(child as Node3D)
+		if not wps.is_empty():
+			enemy.patrol_waypoints = wps

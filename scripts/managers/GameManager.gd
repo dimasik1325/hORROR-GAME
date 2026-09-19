@@ -6,14 +6,15 @@ signal objective_updated(title: String, description: String, progress: String)
 signal note_opened(title: String, text: String, author: String)
 signal note_collected(current_count: int, total_count: int)
 signal player_jumpscare_triggered(monster_node: Node3D)
+signal ritual_completed()
 signal player_died()
 signal game_paused(is_paused: bool)
 
 # --- КВЕСТЫ И СБОР ПРЕДМЕТОВ ---
 var notes_collected_count: int = 0
 var total_notes_target: int = 4
-var current_objective_title: String = "Исследовать кордон"
-var current_objective_desc: String = "Осмотрите заброшенную избу и соберите записки геодезистов."
+var current_objective_title: String = "Исследовать Кордон"
+var current_objective_desc: String = "Осмотрите заброшенную избу, включите фонарь [F] и найдите записки экспедиции."
 
 # --- НАСТРОЙКИ ГРАФИКИ И АУДИО ---
 var master_volume: float = 1.0
@@ -28,6 +29,7 @@ var ssil_enabled: bool = true
 var msaa_quality: int = 2
 
 var is_game_over: bool = false
+var is_game_won: bool = false
 
 
 func _ready() -> void:
@@ -43,17 +45,29 @@ func collect_note(note_item: ItemData) -> void:
 		open_note_dialog(note_item.display_name, note_item.note_text, note_item.note_author)
 
 	# Обновление цепочки квестов
-	if notes_collected_count < total_notes_target:
+	if notes_collected_count == 1:
 		update_objective(
-			"Собрать ритуальные записки",
-			"Найдите все следы пропавшей экспедиции в чаще леса.",
+			"Исследовать Болотную Тропу",
+			"Первая зацепка найдена. Двигайтесь вдоль фонарных столбов к заброшенному джипу геодезистов.",
 			"%d / %d" % [notes_collected_count, total_notes_target]
 		)
-	else:
+	elif notes_collected_count == 2:
 		update_objective(
-			"Найти Алтарь Первородной Коры",
-			"Все страницы собраны! Следуйте за шепотом в глубину чащи к Древу-Исполину.",
-			"ГОТОВО"
+			"Обыскать Старую Лесопилку",
+			"По слухам, экспедиция разбила лагерь возле штабелей леса. Найдите третью страницу.",
+			"%d / %d" % [notes_collected_count, total_notes_target]
+		)
+	elif notes_collected_count == 3:
+		update_objective(
+			"Пробиться к Капищу Первородной Коры",
+			"Следы ведут к монолитам и Древу-Исполину на востоке. Найдите финальную записку.",
+			"%d / %d" % [notes_collected_count, total_notes_target]
+		)
+	elif notes_collected_count >= total_notes_target:
+		update_objective(
+			"Активировать Алтарь Первородной Коры",
+			"Все 4 страницы собраны! Подойдите к Алтарю под великим Древом и положите их, чтобы раскрыть тайну.",
+			"ГОТОВО (4/4)"
 		)
 
 
@@ -67,9 +81,17 @@ func update_objective(title: String, desc: String, progress: String = "") -> voi
 	objective_updated.emit(title, desc, progress)
 
 
+## Завершение ритуала на алтаре (Победа в расследовании)
+func trigger_ritual_completion() -> void:
+	if is_game_won or is_game_over:
+		return
+	is_game_won = true
+	ritual_completed.emit()
+
+
 ## Запуск скримера и гибели игрока
 func trigger_monster_jumpscare(monster: Node3D) -> void:
-	if is_game_over:
+	if is_game_over or is_game_won:
 		return
 	is_game_over = true
 	player_jumpscare_triggered.emit(monster)
@@ -77,6 +99,7 @@ func trigger_monster_jumpscare(monster: Node3D) -> void:
 
 func restart_game() -> void:
 	is_game_over = false
+	is_game_won = false
 	notes_collected_count = 0
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/MainWorld.tscn")
@@ -84,25 +107,26 @@ func restart_game() -> void:
 
 func go_to_main_menu() -> void:
 	is_game_over = false
+	is_game_won = false
 	get_tree().paused = false
 	get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
 
 
-# --- ПРИМЕНЕНИЕ НАСТРОЕК ГРАФИКИ И ДВИЖКА ---
+# --- ПРИМЕНЕНИЕ НАСТРОЕК ГРАФИКИ И ДВИЖКА (БЕЗ ОШИБОК КОМПИЛЯЦИИ) ---
 func apply_graphics_settings() -> void:
-	# Оконный режим
+	# Оконный / Полноэкранный режим
 	if is_fullscreen:
-		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_EXCLUSIVE_FULLSCREEN)
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
 	else:
 		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
 
-	# VSync
+	# VSync режим (используем безопасный вызов)
 	if vsync_enabled:
-		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_MODE_ENABLED)
+		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED)
 	else:
-		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_MODE_DISABLED)
+		DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_DISABLED)
 
-	# MSAA
+	# Сглаживание MSAA
 	var viewport = get_viewport()
 	if viewport:
 		match msaa_quality:

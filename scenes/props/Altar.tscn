@@ -1,0 +1,94 @@
+[gd_scene load_steps=12 format=3 uid="uid://altar_horror_01"]
+
+[ext_resource type="Script" path="res://scripts/world/RitualAltar.gd" id="1_altar"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_altar_col"]
+size = Vector3(2.8, 1.4, 2.0)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_altar_stone"]
+albedo_color = Color(0.18, 0.16, 0.18, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_altar_base"]
+material = SubResource("StandardMaterial3D_altar_stone")
+size = Vector3(2.6, 1.0, 1.8)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_blood_runes"]
+albedo_color = Color(0.9, 0.12, 0.08, 1)
+emission_enabled = true
+emission = Color(1, 0.08, 0.04, 1)
+emission_energy_multiplier = 3.5
+
+[sub_resource type="BoxMesh" id="BoxMesh_rune_slab"]
+material = SubResource("StandardMaterial3D_blood_runes")
+size = Vector3(2.2, 0.08, 1.4)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_candle_wax"]
+albedo_color = Color(0.85, 0.8, 0.7, 1)
+roughness = 0.5
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_candle"]
+material = SubResource("StandardMaterial3D_candle_wax")
+top_radius = 0.04
+bottom_radius = 0.05
+height = 0.35
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rune_spark"]
+shading_mode = 0
+albedo_color = Color(1, 0.2, 0.1, 1)
+
+[sub_resource type="SphereMesh" id="SphereMesh_rune_particle"]
+material = SubResource("StandardMaterial3D_rune_spark")
+radius = 0.05
+height = 0.1
+
+[node name="Altar" type="CollisionObject3D"]
+collision_layer = 4
+collision_mask = 0
+script = ExtResource("1_altar")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.6, 0)
+shape = SubResource("BoxShape3D_altar_col")
+
+[node name="BaseMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+mesh = SubResource("BoxMesh_altar_base")
+
+[node name="RuneSlab" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.04, 0)
+mesh = SubResource("BoxMesh_rune_slab")
+
+[node name="Candle1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.9, 1.2, -0.6)
+mesh = SubResource("CylinderMesh_candle")
+
+[node name="Candle2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 1.2, -0.6)
+mesh = SubResource("CylinderMesh_candle")
+
+[node name="Candle3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.9, 1.2, 0.6)
+mesh = SubResource("CylinderMesh_candle")
+
+[node name="AltarLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+light_color = Color(1, 0.25, 0.15, 1)
+light_energy = 3.2
+shadow_enabled = true
+omni_range = 14.0
+
+[node name="RuneParticles" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.1, 0)
+amount = 32
+lifetime = 1.6
+mesh = SubResource("SphereMesh_rune_particle")
+emission_shape = 2
+emission_box_extents = Vector3(1.0, 0.1, 0.6)
+direction = Vector3(0, 1, 0)
+spread = 20.0
+gravity = Vector3(0, 1.5, 0)
+initial_velocity_min = 0.8
+initial_velocity_max = 2.0
+scale_amount_min = 0.4
+scale_amount_max = 1.4

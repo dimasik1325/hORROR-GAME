@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://mainworld_horror_01"]
+[gd_scene load_steps=27 format=3 uid="uid://mainworld_horror_01"]
 
 [ext_resource type="Script" path="res://scripts/world/MainWorld.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/world/WorldStreamer.gd" id="2_streamer"]
@@ -13,6 +13,12 @@
 [ext_resource type="PackedScene" path="res://scenes/ui/PauseMenu.tscn" id="11_pause"]
 [ext_resource type="PackedScene" path="res://scenes/props/NotePickup.tscn" id="12_note"]
 [ext_resource type="PackedScene" path="res://scenes/props/BatteryPickup.tscn" id="13_battery"]
+[ext_resource type="PackedScene" path="res://scenes/props/Watchtower.tscn" id="14_tower"]
+[ext_resource type="PackedScene" path="res://scenes/props/AbandonedJeep.tscn" id="15_jeep"]
+[ext_resource type="PackedScene" path="res://scenes/props/SawmillLumber.tscn" id="16_sawmill"]
+[ext_resource type="PackedScene" path="res://scenes/props/MegalithStone.tscn" id="17_megalith"]
+[ext_resource type="PackedScene" path="res://scenes/props/TitanTree.tscn" id="18_titantree"]
+[ext_resource type="PackedScene" path="res://scenes/props/Altar.tscn" id="19_altar"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_night"]
 sky_top_color = Color(0.04, 0.08, 0.15, 1)
@@ -64,20 +70,24 @@ shader_parameter/max_lens_distortion = 0.22
 shader_parameter/vignette_falloff = 1.8
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_clearing_ground"]
-albedo_color = Color(0.16, 0.2, 0.14, 1)
-roughness = 0.9
+albedo_color = Color(0.14, 0.18, 0.12, 1)
+roughness = 0.92
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_clearing"]
+[sub_resource type="PlaneMesh" id="PlaneMesh_main_terrain"]
 material = SubResource("StandardMaterial3D_clearing_ground")
-size = Vector2(80, 80)
+size = Vector2(220, 220)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trail_dirt"]
 albedo_color = Color(0.24, 0.18, 0.12, 1)
 roughness = 0.95
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_trail"]
+[sub_resource type="PlaneMesh" id="PlaneMesh_trail_main"]
 material = SubResource("StandardMaterial3D_trail_dirt")
-size = Vector2(3.6, 50.0)
+size = Vector2(4.0, 80.0)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_trail_branch"]
+material = SubResource("StandardMaterial3D_trail_dirt")
+size = Vector2(3.5, 65.0)
 
 [node name="MainWorld" type="Node3D"]
 script = ExtResource("1_main")
@@ -86,7 +96,7 @@ script = ExtResource("1_main")
 environment = SubResource("Environment_horror")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 45, 0)
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 50, 0)
 light_color = Color(0.62, 0.74, 0.88, 1)
 light_energy = 1.35
 shadow_enabled = true
@@ -96,12 +106,24 @@ directional_shadow_split_2 = 0.22
 directional_shadow_split_3 = 0.5
 directional_shadow_blend_splits = true
 
-[node name="ClearingGround" type="MeshInstance3D" parent="." groups=["surface_foliage"]]
-mesh = SubResource("PlaneMesh_clearing")
+[node name="TerrainGround" type="MeshInstance3D" parent="." groups=["surface_foliage"]]
+mesh = SubResource("PlaneMesh_main_terrain")
 
-[node name="DirtTrail" type="MeshInstance3D" parent="." groups=["surface_mud"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -10)
-mesh = SubResource("PlaneMesh_trail")
+[node name="MainTrail" type="MeshInstance3D" parent="." groups=["surface_mud"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -15)
+mesh = SubResource("PlaneMesh_trail_main")
+
+[node name="SwampTrail" type="MeshInstance3D" parent="." groups=["surface_mud"]]
+transform = Transform3D(0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, -12, 0.02, -32)
+mesh = SubResource("PlaneMesh_trail_branch")
+
+[node name="SawmillTrail" type="MeshInstance3D" parent="." groups=["surface_mud"]]
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 18, 0.02, -18)
+mesh = SubResource("PlaneMesh_trail_branch")
+
+[node name="AltarTrail" type="MeshInstance3D" parent="." groups=["surface_mud"]]
+transform = Transform3D(0.965926, 0, -0.258819, 0, 1, 0, 0.258819, 0, 0.965926, 22, 0.02, -42)
+mesh = SubResource("PlaneMesh_trail_branch")
 
 [node name="Cabin" parent="." instance=ExtResource("9_cabin")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -22)
@@ -109,11 +131,47 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -22)
 [node name="Campfire" parent="." instance=ExtResource("7_campfire")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -8)
 
+[node name="Watchtower" parent="." instance=ExtResource("14_tower")]
+transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, -26, 0, 2)
+
+[node name="AbandonedJeep" parent="." instance=ExtResource("15_jeep")]
+transform = Transform3D(0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, -20, 0, -42)
+
+[node name="Sawmill" parent="." instance=ExtResource("16_sawmill")]
+transform = Transform3D(0.866025, 0, -0.5, 0, 1, 0, 0.5, 0, 0.866025, 34, 0, -12)
+
+[node name="TitanTree" parent="." instance=ExtResource("18_titantree")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, -56)
+
+[node name="Altar" parent="." instance=ExtResource("19_altar")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, -48)
+
+[node name="Megalith1" parent="." instance=ExtResource("17_megalith")]
+transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, 22, 0, -44)
+
+[node name="Megalith2" parent="." instance=ExtResource("17_megalith")]
+transform = Transform3D(0.866025, 0, -0.5, 0, 1, 0, 0.5, 0, 0.866025, 38, 0, -44)
+
+[node name="Megalith3" parent="." instance=ExtResource("17_megalith")]
+transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 22, 0, -58)
+
+[node name="Megalith4" parent="." instance=ExtResource("17_megalith")]
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 38, 0, -58)
+
 [node name="LanternPost_01" parent="." instance=ExtResource("8_lantern")]
 transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, -3.8, 0, -3)
 
 [node name="LanternPost_02" parent="." instance=ExtResource("8_lantern")]
 transform = Transform3D(0.866025, 0, -0.5, 0, 1, 0, 0.5, 0, 0.866025, 3.8, 0, -15)
+
+[node name="LanternPost_03" parent="." instance=ExtResource("8_lantern")]
+transform = Transform3D(0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, -14, 0, -34)
+
+[node name="LanternPost_04" parent="." instance=ExtResource("8_lantern")]
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 22, 0, -10)
+
+[node name="LanternPost_05" parent="." instance=ExtResource("8_lantern")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0, -38)
 
 [node name="WorldStreamer" type="Node3D" parent="."]
 script = ExtResource("2_streamer")
@@ -135,7 +193,7 @@ material = SubResource("ShaderMaterial_postprocess")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 5.0)
 
 [node name="Enemy" parent="." instance=ExtResource("6_enemy")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 1.0, -26)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 1.0, -32)
 
 [node name="HUD" parent="." instance=ExtResource("10_hud")]
 
@@ -145,29 +203,29 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 1.0, -26)
 
 [node name="Note_CabinPorch" parent="Interactables" instance=ExtResource("12_note")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 0.35, -19.2)
-note_title = "Записка #1: Письмо на кордоне"
-full_text = "«Детективу Уэйну. Если ты добрался до Черного Омута — значит, экспедиция уже у них. Не верь собственным глазам. Лес помнит твои грехи...»"
-author_signature = "Аноним"
+note_title = "Записка #1: Письмо на Кордоне"
+full_text = "«Детективу Уэйну. Если ты читаешь это — ты уже в ловушке Черного Омута. Экспедиция ушла к болоту. Не верь своим глазам: деревья наблюдают за тобой, а в рации звучит твой собственный голос...»"
+author_signature = "Анонимный Заказчик"
 note_index = 1
 
-[node name="Note_Campfire" parent="Interactables" instance=ExtResource("12_note")]
-transform = Transform3D(0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, 1.5, 0.15, -7.5)
-note_title = "Записка #2: Дневник геодезиста"
-full_text = "«Они приходят из тумана. Мы заперлись в избушке, но корни начали прорастать прямо сквозь половицы. Наш командир пошел в чащу и шептал имя Уэйна...»"
+[node name="Note_SwampJeep" parent="Interactables" instance=ExtResource("12_note")]
+transform = Transform3D(0.866025, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866025, -18.5, 0.85, -41.2)
+note_title = "Записка #2: Дневник у Джипа"
+full_text = "«17 сентября. Машина застряла в трясине. Они окружили нас. Это не звери — это сплетения корней и мертвецов. Наш командир перед смертью повторял: 'Уэйн вернется, чтобы завершить ритуал'... О ком он говорил?!»"
 author_signature = "Геодезист Смирнов"
 note_index = 2
 
-[node name="Note_Lantern" parent="Interactables" instance=ExtResource("12_note")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 0.15, -14.8)
-note_title = "Записка #3: Ритуальный манифест"
-full_text = "«Сдирание Коры неизбежно. Тот, кто сотрет свой разум, станет новым семенем Древа. Цикл Уробороса не разомкнется...»"
+[node name="Note_Sawmill" parent="Interactables" instance=ExtResource("12_note")]
+transform = Transform3D(0.866025, 0, -0.5, 0, 1, 0, 0.5, 0, 0.866025, 33.2, 0.65, -11.0)
+note_title = "Записка #3: Ритуальный Манифест"
+full_text = "«Великое Сдирание Коры неизбежно. Лидер культа сотрет свой разум и вернется как невинная жертва. Когда четыре осколка памяти соединятся на Алтаре под Древом — Тайга поглотит весь мир...»"
 author_signature = "Адепты Первородной Коры"
 note_index = 3
 
-[node name="Note_CultistAltar" parent="Interactables" instance=ExtResource("12_note")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.5, 0.2, -24.0)
+[node name="Note_TitanAltar" parent="Interactables" instance=ExtResource("12_note")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.0, 1.15, -48.0)
 note_title = "Записка #4: Почерк Уэйна"
-full_text = "«Это мой собственный почерк. Я сам отдал приказ принести их в жертву. Я сам стер себе память. Я и есть Лидер культа...»"
+full_text = "«Боже мой... Это мой собственный почерк. Письма, которые привели меня сюда, написал я сам. Я сам отдал приказ геодезистам принести себя в жертву. Я — Нулевой Пациент и Верховный Жрец. Я сам стер себе память...»"
 author_signature = "Детектив Уэйн"
 note_index = 4
 
@@ -176,3 +234,32 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 0.35, -19.4)
 
 [node name="Battery_Campfire" parent="Interactables" instance=ExtResource("13_battery")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 0.15, -8.6)
+
+[node name="Battery_Watchtower" parent="Interactables" instance=ExtResource("13_battery")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.0, 8.0, 2.0)
+
+[node name="Battery_Jeep" parent="Interactables" instance=ExtResource("13_battery")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.2, 0.85, -42.5)
+
+[node name="Battery_Sawmill" parent="Interactables" instance=ExtResource("13_battery")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.5, 0.45, -13.5)
+
+[node name="Waypoints" type="Node3D" parent="."]
+
+[node name="WP_Cabin" type="Node3D" parent="Waypoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -18)
+
+[node name="WP_Campfire" type="Node3D" parent="Waypoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -4)
+
+[node name="WP_Watchtower" type="Node3D" parent="Waypoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 0, 0)
+
+[node name="WP_Jeep" type="Node3D" parent="Waypoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 0, -36)
+
+[node name="WP_Sawmill" type="Node3D" parent="Waypoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0, -12)
+
+[node name="WP_Altar" type="Node3D" parent="Waypoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0, -44)

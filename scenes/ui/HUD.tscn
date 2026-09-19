@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://hud_horror_01"]
+[gd_scene load_steps=8 format=3 uid="uid://hud_horror_01"]
 
 [ext_resource type="Script" path="res://scripts/ui/HUD.gd" id="1_hud"]
 
@@ -42,6 +42,18 @@ border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
 border_color = Color(0.65, 0.55, 0.35, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_victory_panel"]
+bg_color = Color(0.04, 0.07, 0.05, 0.96)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.7, 0.4, 0.9)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 corner_radius_bottom_right = 8
@@ -355,3 +367,68 @@ custom_minimum_size = Vector2(0, 48)
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "Главное меню"
+
+[node name="VictoryScreen" type="ColorRect" parent="."]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.02, 0.04, 0.03, 0.96)
+
+[node name="Panel" type="PanelContainer" parent="VictoryScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -360.0
+offset_top = -240.0
+offset_right = 360.0
+offset_bottom = 240.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_victory_panel")
+
+[node name="Margin" type="MarginContainer" parent="VictoryScreen/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 28
+
+[node name="VBox" type="VBoxContainer" parent="VictoryScreen/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="VictoryScreen/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.3, 0.95, 0.5, 1)
+theme_override_font_sizes/font_size = 32
+text = "ФИНАЛ: ТАЙНА РАСКРЫТА"
+horizontal_alignment = 1
+
+[node name="LoreText" type="Label" parent="VictoryScreen/Panel/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.85, 0.9, 0.88, 1)
+theme_override_font_sizes/font_size = 16
+text = "Вы возложили все 4 страницы на Алтарь. 
+
+Туман рассеивается, и истина обрушивается на сознание:
+Вы — не сторонний детектив. Вы — Нулевой Пациент и Верховный Жрец культа, добровольно стерший себе память перед ритуалом. 
+
+Слияние с Древом Первородной Коры завершено. Цикл замкнулся..."
+autowrap_mode = 2
+
+[node name="VictoryRetryBtn" type="Button" parent="VictoryScreen/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Начать новый цикл расследования"
+
+[node name="VictoryMenuBtn" type="Button" parent="VictoryScreen/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Выйти в Главное меню"

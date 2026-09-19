@@ -5,25 +5,25 @@ extends Control
 
 signal closed()
 
-@onready var fullscreen_check: CheckBox = $Panel/Margin/VBox/TabContainer/Графика/VBox/FullscreenCheck
-@onready var vsync_check: CheckBox = $Panel/Margin/VBox/TabContainer/Графика/VBox/VsyncCheck
-@onready var msaa_option: OptionButton = $Panel/Margin/VBox/TabContainer/Графика/VBox/MsaaOption
-@onready var fog_check: CheckBox = $Panel/Margin/VBox/TabContainer/Графика/VBox/FogCheck
-@onready var sdfgi_check: CheckBox = $Panel/Margin/VBox/TabContainer/Графика/VBox/SdfgiCheck
+@onready var fullscreen_check: CheckBox = find_child("FullscreenCheck", true, false)
+@onready var vsync_check: CheckBox = find_child("VsyncCheck", true, false)
+@onready var msaa_option: OptionButton = find_child("MsaaOption", true, false)
+@onready var fog_check: CheckBox = find_child("FogCheck", true, false)
+@onready var sdfgi_check: CheckBox = find_child("SdfgiCheck", true, false)
 
-@onready var master_slider: HSlider = $Panel/Margin/VBox/TabContainer/Звук/VBox/MasterSlider
-@onready var sfx_slider: HSlider = $Panel/Margin/VBox/TabContainer/Звук/VBox/SfxSlider
-@onready var amb_slider: HSlider = $Panel/Margin/VBox/TabContainer/Звук/VBox/AmbSlider
+@onready var master_slider: HSlider = find_child("MasterSlider", true, false)
+@onready var sfx_slider: HSlider = find_child("SfxSlider", true, false)
+@onready var amb_slider: HSlider = find_child("AmbSlider", true, false)
 
-@onready var sens_slider: HSlider = $Panel/Margin/VBox/TabContainer/Управление/VBox/SensSlider
-
-@onready var back_button: Button = $Panel/Margin/VBox/BackButton
+@onready var sens_slider: HSlider = find_child("SensSlider", true, false)
+@onready var back_button: Button = find_child("BackButton", true, false)
 
 
 func _ready() -> void:
 	_setup_options()
 	_load_current_values()
-	back_button.pressed.connect(_on_back_pressed)
+	if back_button != null:
+		back_button.pressed.connect(_on_back_pressed)
 
 
 func _setup_options() -> void:

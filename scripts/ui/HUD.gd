@@ -1,7 +1,7 @@
 class_name GameHUD
 extends CanvasLayer
 
-## Полнофункциональный интерфейс игрока (HUD), журнал задач, ридер записок и скримеры (Godot 4.6-dev)
+## Полнофункциональный интерфейс игрока (HUD), журнал задач, ридер записок, скримеры и финал (Godot 4.6-dev)
 
 @onready var objective_title_label: Label = $ObjectivePanel/VBox/TitleLabel
 @onready var objective_desc_label: Label = $ObjectivePanel/VBox/DescLabel
@@ -25,6 +25,10 @@ extends CanvasLayer
 @onready var retry_button: Button = $DeathScreen/VBox/RetryButton
 @onready var menu_button: Button = $DeathScreen/VBox/MenuButton
 
+@onready var victory_screen: Control = $VictoryScreen
+@onready var victory_retry_btn: Button = $VictoryScreen/VBox/VictoryRetryBtn
+@onready var victory_menu_btn: Button = $VictoryScreen/VBox/VictoryMenuBtn
+
 var _notification_timer: float = 0.0
 
 
@@ -40,6 +44,7 @@ func _connect_signals() -> void:
 		game_mgr.objective_updated.connect(_on_objective_updated)
 		game_mgr.note_opened.connect(_on_note_opened)
 		game_mgr.player_jumpscare_triggered.connect(_on_player_jumpscare)
+		game_mgr.ritual_completed.connect(_on_ritual_completed)
 
 	var sanity_mgr = get_node_or_null("/root/SanityGlobalManager")
 	if sanity_mgr:
@@ -49,6 +54,11 @@ func _connect_signals() -> void:
 		retry_button.pressed.connect(_on_retry_pressed)
 	if menu_button != null:
 		menu_button.pressed.connect(_on_menu_pressed)
+		
+	if victory_retry_btn != null:
+		victory_retry_btn.pressed.connect(_on_retry_pressed)
+	if victory_menu_btn != null:
+		victory_menu_btn.pressed.connect(_on_menu_pressed)
 
 
 func _update_initial_hud() -> void:
@@ -58,6 +68,8 @@ func _update_initial_hud() -> void:
 		jumpscare_overlay.visible = false
 	if death_screen != null:
 		death_screen.visible = false
+	if victory_screen != null:
+		victory_screen.visible = false
 
 	var game_mgr = get_node_or_null("/root/GameManager")
 	if game_mgr:
@@ -144,7 +156,6 @@ func _on_player_jumpscare(_monster: Node3D) -> void:
 	if jumpscare_overlay != null:
 		jumpscare_overlay.visible = true
 
-	# Краткая вспышка скримера и появление экрана смерти
 	var tween = create_tween()
 	tween.tween_property(jumpscare_overlay, "modulate:a", 1.0, 0.1)
 	tween.tween_interval(1.2)
@@ -154,6 +165,13 @@ func _on_player_jumpscare(_monster: Node3D) -> void:
 func _show_death_screen() -> void:
 	if death_screen != null:
 		death_screen.visible = true
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		get_tree().paused = true
+
+
+func _on_ritual_completed() -> void:
+	if victory_screen != null:
+		victory_screen.visible = true
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		get_tree().paused = true
 
