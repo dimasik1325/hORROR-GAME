@@ -2,8 +2,8 @@ class_name AdvancedPlayerController
 extends CharacterBody3D
 
 ## Высокотехнологичный контроллер игрока от первого лица для "Эхо Чащи" (Godot 4.6-dev)
-## Включает: физику инерции таежной грязи, процедурный хедбоббинг, нелинейный фонарик, 
-## гибридную систему интеракций (RayCast+ShapeCast) и звуковой ландшафт шагов.
+## Включает: реалистичный тактический фонарик с двойным конусом (луч + рассеянный свет),
+## физику инерции таежной грязи, процедурный хедбоббинг, 3D-модель фонаря в руках и шаги.
 
 signal stamina_changed(current: float, max_val: float)
 signal flashlight_battery_changed(current: float, max_val: float)
@@ -13,56 +13,58 @@ signal player_stepped(surface_type: StringName, is_sprinting: bool)
 
 # --- ПАРАМЕТРЫ ПЕРЕДВИЖЕНИЯ ---
 @export_group("Физика Передвижения")
-@export var walk_speed: float = 3.2
-@export var sprint_speed: float = 6.8
-@export var crouch_speed: float = 1.6
-@export var exhausted_speed: float = 2.0
-@export var jump_velocity: float = 4.0
+@export var walk_speed: float = 3.6
+@export var sprint_speed: float = 7.2
+@export var crouch_speed: float = 1.8
+@export var exhausted_speed: float = 2.2
+@export var jump_velocity: float = 4.2
 @export var gravity: float = 9.81
 
 # Факторы трения и ускорения на лесных грунтах
-@export var standard_acceleration: float = 12.0
-@export var standard_friction: float = 10.0
-@export var mud_acceleration: float = 5.0
-@export var mud_friction: float = 3.5
+@export var standard_acceleration: float = 14.0
+@export var standard_friction: float = 12.0
+@export var mud_acceleration: float = 6.5
+@export var mud_friction: float = 4.5
 
 # --- СТАМИНА ---
 @export_group("Система Выносливости")
 @export var max_stamina: float = 100.0
-@export var stamina_sprint_drain: float = 16.0 # ед./сек
-@export var stamina_regen_rate: float = 12.0   # ед./сек
-@export var stamina_regen_delay: float = 1.4   # задержка перед восстановлением (сек)
-@export var exhaustion_recovery_threshold: float = 25.0
+@export var stamina_sprint_drain: float = 14.0 # ед./сек
+@export var stamina_regen_rate: float = 16.0   # ед./сек
+@export var stamina_regen_delay: float = 1.2   # задержка перед восстановлением (сек)
+@export var exhaustion_recovery_threshold: float = 20.0
 
 # --- ХЕДБОББИНГ И ДИНАМИКА КАМЕРЫ ---
 @export_group("Процедурный Head Bobbing")
 @export var bob_frequency_walk: float = 7.5
-@export var bob_amplitude_walk_v: float = 0.045
-@export var bob_amplitude_walk_h: float = 0.025
+@export var bob_amplitude_walk_v: float = 0.035
+@export var bob_amplitude_walk_h: float = 0.02
 @export var bob_frequency_sprint: float = 12.5
-@export var bob_amplitude_sprint_v: float = 0.085
-@export var bob_amplitude_sprint_h: float = 0.045
+@export var bob_amplitude_sprint_v: float = 0.065
+@export var bob_amplitude_sprint_h: float = 0.035
 @export var camera_tilt_amount: float = 0.035
 @export var camera_tilt_speed: float = 6.0
 
 # --- ФОНАРИК ---
 @export_group("Фонарик и Батарея")
 @export var max_battery_capacity: float = 100.0
-@export var battery_drain_rate: float = 0.35 # ед./сек
-@export var max_light_energy: float = 2.8
-@export var critical_battery_threshold: float = 20.0
-@export var flashlight_sway_smoothing: float = 12.0
+@export var battery_drain_rate: float = 0.15 # ед./сек (комфортный баланс)
+@export var max_light_energy: float = 4.2    # Яркий реалистичный световой поток
+@export var critical_battery_threshold: float = 15.0
+@export var flashlight_sway_smoothing: float = 14.0
 
 # --- ИНТЕРАКЦИИ ---
 @export_group("Интеракции")
-@export var raycast_interaction_distance: float = 2.4
-@export var shapecast_radius: float = 0.35
+@export var raycast_interaction_distance: float = 2.8
+@export var shapecast_radius: float = 0.4
 
 # --- УЗЛЫ СЦЕНЫ ---
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
 @onready var flashlight_pivot: Node3D = $Head/Camera3D/FlashlightPivot
 @onready var flashlight_spot: SpotLight3D = $Head/Camera3D/FlashlightPivot/SpotLight3D
+@onready var flashlight_spill: SpotLight3D = $Head/Camera3D/FlashlightPivot/SpillLight3D
+@onready var flashlight_mesh: Node3D = $Head/Camera3D/FlashlightPivot/FlashlightModel
 @onready var flashlight_click_audio: AudioStreamPlayer3D = $Head/Camera3D/FlashlightPivot/ClickAudio
 @onready var interaction_ray: RayCast3D = $Head/Camera3D/InteractionRayCast
 @onready var interaction_shape: ShapeCast3D = $Head/Camera3D/InteractionShapeCast
@@ -91,9 +93,7 @@ var _bob_timer: float = 0.0
 var _current_step_cycle: float = 0.0
 var _previous_step_phase: float = 0.0
 
-var _target_flashlight_transform: Transform3D
 var _current_focused_interactable: Interactable = null
-
 var _mouse_sensitivity: float = 0.0022
 var _current_surface_type: StringName = &"foliage"
 var _inventory: Array[ItemData] = []
@@ -103,9 +103,6 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 	_current_stamina = max_stamina
 	_current_battery = max_battery_capacity
-	
-	if flashlight_pivot != null:
-		_target_flashlight_transform = flashlight_pivot.transform
 
 	_setup_interaction_casts()
 	_update_flashlight_visuals(0.0)
@@ -136,14 +133,12 @@ func _physics_process(delta: float) -> void:
 	_process_interactions()
 
 
-# --- ОБРАБОТКА ВРАЩЕНИЯ КАМЕРЫ ---
 func _rotate_view(mouse_delta: Vector2) -> void:
 	rotate_y(-mouse_delta.x * _mouse_sensitivity)
 	head.rotate_x(-mouse_delta.y * _mouse_sensitivity)
 	head.rotation.x = clampf(head.rotation.x, deg_to_rad(-88.0), deg_to_rad(88.0))
 
 
-# --- ПЕРЕДВИЖЕНИЕ И ИНЕРЦИЯ ГРЯЗИ ---
 func _process_movement(delta: float) -> void:
 	if not is_on_floor():
 		velocity.y -= gravity * delta
@@ -153,11 +148,9 @@ func _process_movement(delta: float) -> void:
 			_current_stamina = maxf(0.0, _current_stamina - 10.0)
 			_stamina_timer = stamina_regen_delay
 
-	# Считывание векторов ввода
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var move_direction: Vector3 = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 
-	# Определение скорости
 	var is_sprinting: bool = Input.is_action_pressed("sprint") and input_dir.y < -0.1 and not _is_exhausted and not _is_crouching
 	var target_speed: float = walk_speed
 
@@ -172,7 +165,6 @@ func _process_movement(delta: float) -> void:
 		if _current_stamina <= 0.0:
 			_is_exhausted = true
 
-	# Динамический расчет трения в зависимости от типа грунта
 	var current_accel: float = standard_acceleration
 	var current_fric: float = standard_friction
 
@@ -193,14 +185,12 @@ func _process_movement(delta: float) -> void:
 
 	move_and_slide()
 
-	# Оповещение подсистемы слуха монстров при беге
 	if is_sprinting and horizontal_velocity.length() > 2.5 and is_on_floor():
 		var sanity_mgr = get_node_or_null("/root/SanityGlobalManager")
 		if sanity_mgr and sanity_mgr.has_method("emit_noise"):
 			sanity_mgr.emit_noise(global_position, 16.0, &"player_sprint")
 
 
-# --- ПРОЦЕДУРНЫЙ ХЕДБОББИНГ И НАКЛОНЫ КАМЕРЫ ---
 func _process_head_bob(delta: float) -> void:
 	var horizontal_speed: float = Vector2(velocity.x, velocity.z).length()
 	var is_moving: bool = horizontal_speed > 0.3 and is_on_floor()
@@ -224,19 +214,16 @@ func _process_head_bob(delta: float) -> void:
 	var bob_offset_x: float = cos(_bob_timer * 0.5) * amp_h
 	camera.transform.origin = Vector3(bob_offset_x, bob_offset_y, 0.0)
 
-	# Детекция нижней точки фазы синусоиды для шага
 	var current_sine_val: float = sin(_bob_timer)
 	if _previous_step_phase > 0.0 and current_sine_val <= 0.0:
 		_trigger_footstep(is_sprinting)
 	_previous_step_phase = current_sine_val
 
 
-# --- ДИНАМИЧЕСКИЙ ФОНАРИК С ФИЗИЧЕСКИМ ПОКАЧИВАНИЕМ И ФЛИККЕРИНГОМ ---
 func _process_flashlight_sway(delta: float) -> void:
 	if flashlight_pivot == null:
 		return
 		
-	# Инерционное сглаживание положения фонарика относительно камеры (физический лаг руки)
 	var target_basis: Basis = camera.global_transform.basis
 	flashlight_pivot.global_transform.basis = flashlight_pivot.global_transform.basis.slerp(
 		target_basis, 
@@ -264,26 +251,29 @@ func _update_flashlight_visuals(delta: float) -> void:
 
 	if not _is_flashlight_on or _current_battery <= 0.0:
 		flashlight_spot.visible = false
+		if flashlight_spill != null:
+			flashlight_spill.visible = false
 		return
 
 	flashlight_spot.visible = true
+	if flashlight_spill != null:
+		flashlight_spill.visible = true
 
-	# Нелинейное затухание яркости: I = I_0 * (charge / 100)^1.6
 	var battery_ratio: float = _current_battery / max_battery_capacity
-	var base_intensity: float = max_light_energy * pow(battery_ratio, 1.6)
+	var base_intensity: float = max_light_energy * pow(battery_ratio, 1.2)
 
-	# Эффект критического мерцания (фликкеринга) при заряде ниже 20%
 	if _current_battery <= critical_battery_threshold:
 		_flicker_noise_seed += delta * 45.0
 		var noise_val: float = sin(_flicker_noise_seed) * cos(_flicker_noise_seed * 2.37)
 		
-		# Спорадические кратковременные провалы света
 		if randf() < 0.08:
 			base_intensity *= randf_range(0.0, 0.25)
 		else:
 			base_intensity *= clampf(0.5 + 0.5 * noise_val, 0.1, 1.0)
 
 	flashlight_spot.light_energy = base_intensity
+	if flashlight_spill != null:
+		flashlight_spill.light_energy = base_intensity * 0.45
 
 
 func toggle_flashlight() -> void:
@@ -309,7 +299,6 @@ func restore_flashlight_battery(amount: float) -> bool:
 	return true
 
 
-# --- СТАМИНА И ДЫХАНИЕ ---
 func _update_stamina(delta: float) -> void:
 	if _stamina_timer > 0.0:
 		_stamina_timer -= delta
@@ -321,7 +310,6 @@ func _update_stamina(delta: float) -> void:
 
 	stamina_changed.emit(_current_stamina, max_stamina)
 
-	# Управление процедурным звуком тяжелого дыхания
 	if breathing_audio != null:
 		if _current_stamina < 35.0:
 			if not breathing_audio.playing:
@@ -335,11 +323,10 @@ func _update_stamina(delta: float) -> void:
 				breathing_audio.volume_db = move_toward(breathing_audio.volume_db, -25.0, delta * 12.0)
 
 
-# --- ГИБРИДНАЯ СИСТЕМА ИНТЕРАКЦИЙ ---
 func _setup_interaction_casts() -> void:
 	if interaction_ray != null:
 		interaction_ray.target_position = Vector3(0, 0, -raycast_interaction_distance)
-		interaction_ray.collision_mask = 4 # Слой 3 (интеракции)
+		interaction_ray.collision_mask = 4
 	
 	if interaction_shape != null:
 		var sphere_shape: SphereShape3D = SphereShape3D.new()
@@ -352,13 +339,11 @@ func _setup_interaction_casts() -> void:
 func _process_interactions() -> void:
 	var detected_interactable: Interactable = null
 
-	# Приоритет 1: Прямой RayCast3D
 	if interaction_ray != null and interaction_ray.is_colliding():
 		var collider: Object = interaction_ray.get_collider()
 		if collider is Interactable and (collider as Interactable).is_interactable:
 			detected_interactable = collider as Interactable
 
-	# Приоритет 2: Объемный ShapeCast3D
 	if detected_interactable == null and interaction_shape != null and interaction_shape.is_colliding():
 		var closest_dist: float = 999.0
 		for i in range(interaction_shape.get_collision_count()):
@@ -369,7 +354,6 @@ func _process_interactions() -> void:
 					closest_dist = dist
 					detected_interactable = collider as Interactable
 
-	# Обработка смены таргета
 	if detected_interactable != _current_focused_interactable:
 		if _current_focused_interactable != null:
 			_current_focused_interactable.set_focus(self, false)
@@ -388,7 +372,6 @@ func _try_interact() -> void:
 		_current_focused_interactable.interact(self)
 
 
-# --- ОПРЕДЕЛЕНИЕ ПОВЕРХНОСТИ И ПРОЦЕДУРНЫЕ ШАГИ ---
 func _update_surface_detection() -> void:
 	if floor_detector == null or not floor_detector.is_colliding():
 		return
@@ -431,14 +414,12 @@ func _trigger_footstep(is_sprinting: bool) -> void:
 
 	player_stepped.emit(_current_surface_type, is_sprinting)
 	
-	# Излучение акустического события для ИИ монстра
 	var noise_radius: float = 14.0 if is_sprinting else 4.0
 	var sanity_mgr = get_node_or_null("/root/SanityGlobalManager")
 	if sanity_mgr and sanity_mgr.has_method("emit_noise"):
 		sanity_mgr.emit_noise(global_position, noise_radius, &"footstep")
 
 
-# --- ИНВЕНТАРЬ И УТИЛИТЫ ---
 func add_item_to_inventory(item: ItemData) -> bool:
 	_inventory.append(item)
 	return true

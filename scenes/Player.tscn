@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://player_horror_01"]
+[gd_scene load_steps=10 format=3 uid="uid://player_horror_01"]
 
 [ext_resource type="Script" path="res://scripts/player/AdvancedPlayerController.gd" id="1_controller"]
 
@@ -6,8 +6,41 @@
 radius = 0.4
 height = 1.8
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flashlight_metal"]
+albedo_color = Color(0.12, 0.13, 0.15, 1)
+metallic = 0.85
+roughness = 0.35
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_flashlight_handle"]
+material = SubResource("StandardMaterial3D_flashlight_metal")
+top_radius = 0.024
+bottom_radius = 0.022
+height = 0.18
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_flashlight_bezel"]
+albedo_color = Color(0.7, 0.72, 0.75, 1)
+metallic = 0.95
+roughness = 0.2
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_flashlight_head"]
+material = SubResource("StandardMaterial3D_flashlight_bezel")
+top_radius = 0.038
+bottom_radius = 0.025
+height = 0.05
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lens_glow"]
+albedo_color = Color(1, 0.95, 0.8, 1)
+emission_enabled = true
+emission = Color(1, 0.95, 0.85, 1)
+emission_energy_multiplier = 4.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_bulb"]
+material = SubResource("StandardMaterial3D_lens_glow")
+radius = 0.025
+height = 0.025
+
 [sub_resource type="SphereShape3D" id="SphereShape3D_interact"]
-radius = 0.35
+radius = 0.4
 
 [node name="Player" type="CharacterBody3D" groups=["Player"]]
 collision_layer = 2
@@ -25,26 +58,54 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)
 current = true
 fov = 78.0
 near = 0.05
-far = 350.0
+far = 400.0
 
 [node name="FlashlightPivot" type="Node3D" parent="Head/Camera3D"]
 
+[node name="FlashlightModel" type="Node3D" parent="Head/Camera3D/FlashlightPivot"]
+transform = Transform3D(1, 0, 0, 0, 0.996195, 0.0871557, 0, -0.0871557, 0.996195, 0.22, -0.22, -0.32)
+
+[node name="HandleMesh" type="MeshInstance3D" parent="Head/Camera3D/FlashlightPivot/FlashlightModel"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0.08)
+mesh = SubResource("CylinderMesh_flashlight_handle")
+
+[node name="HeadMesh" type="MeshInstance3D" parent="Head/Camera3D/FlashlightPivot/FlashlightModel"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, -0.02)
+mesh = SubResource("CylinderMesh_flashlight_head")
+
+[node name="BulbMesh" type="MeshInstance3D" parent="Head/Camera3D/FlashlightPivot/FlashlightModel"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.045)
+mesh = SubResource("SphereMesh_bulb")
+
 [node name="SpotLight3D" type="SpotLight3D" parent="Head/Camera3D/FlashlightPivot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.2, -0.15, -0.1)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.22, -0.2, -0.38)
+light_color = Color(1, 0.96, 0.88, 1)
+light_energy = 4.2
 shadow_enabled = true
-spot_range = 28.0
-spot_angle = 38.0
+shadow_bias = 0.015
+spot_range = 36.0
+spot_angle = 34.0
+spot_angle_attenuation = 1.3
+
+[node name="SpillLight3D" type="SpotLight3D" parent="Head/Camera3D/FlashlightPivot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.22, -0.2, -0.38)
+light_color = Color(0.9, 0.94, 1, 1)
+light_energy = 1.8
+shadow_enabled = false
+spot_range = 22.0
+spot_angle = 72.0
+spot_angle_attenuation = 2.0
 
 [node name="ClickAudio" type="AudioStreamPlayer3D" parent="Head/Camera3D/FlashlightPivot"]
 bus = &"SFX"
 
 [node name="InteractionRayCast" type="RayCast3D" parent="Head/Camera3D"]
-target_position = Vector3(0, 0, -2.4)
+target_position = Vector3(0, 0, -2.8)
 collision_mask = 4
 
 [node name="InteractionShapeCast" type="ShapeCast3D" parent="Head/Camera3D"]
 shape = SubResource("SphereShape3D_interact")
-target_position = Vector3(0, 0, -2.4)
+target_position = Vector3(0, 0, -2.8)
 collision_mask = 4
 
 [node name="AudioListener3D" type="AudioListener3D" parent="Head/Camera3D"]

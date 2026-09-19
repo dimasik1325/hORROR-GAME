@@ -1,32 +1,90 @@
-[gd_scene load_steps=8 format=3 uid="uid://chunk_default_64"]
+[gd_scene load_steps=18 format=3 uid="uid://chunk_default_64"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ground"]
 size = Vector3(64, 1, 64)
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ground"]
-albedo_color = Color(0.12, 0.16, 0.11, 1)
-roughness = 0.9
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_forest_ground"]
+albedo_color = Color(0.14, 0.18, 0.12, 1)
+roughness = 0.92
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_ground"]
-material = SubResource("StandardMaterial3D_ground")
+material = SubResource("StandardMaterial3D_forest_ground")
 size = Vector2(64, 64)
 
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_tree"]
-height = 12.0
-radius = 0.45
-
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bark"]
-albedo_color = Color(0.18, 0.13, 0.09, 1)
+albedo_color = Color(0.19, 0.13, 0.09, 1)
 roughness = 0.95
 
-[sub_resource type="CylinderMesh" id="CylinderMesh_tree"]
+[sub_resource type="CylinderMesh" id="CylinderMesh_trunk_tall"]
 material = SubResource("StandardMaterial3D_bark")
-top_radius = 0.35
+top_radius = 0.22
 bottom_radius = 0.55
-height = 12.0
+height = 14.0
 
-[sub_resource type="BoxMesh" id="BoxMesh_horror_totem"]
-size = Vector3(0.6, 2.8, 0.6)
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pine_needles"]
+albedo_color = Color(0.08, 0.16, 0.1, 1)
+roughness = 0.82
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_canopy_low"]
+material = SubResource("StandardMaterial3D_pine_needles")
+top_radius = 0.8
+bottom_radius = 3.6
+height = 4.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_canopy_mid"]
+material = SubResource("StandardMaterial3D_pine_needles")
+top_radius = 0.4
+bottom_radius = 2.7
+height = 3.6
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_canopy_top"]
+material = SubResource("StandardMaterial3D_pine_needles")
+top_radius = 0.05
+bottom_radius = 1.8
+height = 3.2
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_tree_col"]
+height = 14.0
+radius = 0.6
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rock"]
+albedo_color = Color(0.25, 0.26, 0.24, 1)
+roughness = 0.88
+
+[sub_resource type="SphereMesh" id="SphereMesh_boulder"]
+material = SubResource("StandardMaterial3D_rock")
+radius = 1.4
+height = 1.8
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_boulder_col"]
+radius = 1.3
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_fallen_log"]
+material = SubResource("StandardMaterial3D_bark")
+top_radius = 0.28
+bottom_radius = 0.35
+height = 7.5
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cultist_bone"]
+albedo_color = Color(0.7, 0.65, 0.55, 1)
+roughness = 0.7
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_totem_stick"]
+material = SubResource("StandardMaterial3D_cultist_bone")
+top_radius = 0.04
+bottom_radius = 0.06
+height = 2.4
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_totem_glow"]
+albedo_color = Color(0.85, 0.15, 0.1, 1)
+emission_enabled = true
+emission = Color(1, 0.1, 0.05, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_skull"]
+material = SubResource("StandardMaterial3D_totem_glow")
+radius = 0.18
+height = 0.32
 
 [node name="DefaultChunk" type="Node3D"]
 
@@ -42,40 +100,139 @@ shape = SubResource("BoxShape3D_ground")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 mesh = SubResource("PlaneMesh_ground")
 
-[node name="Tree_01" type="StaticBody3D" parent="." groups=["tree_bark"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 6, 12)
+[node name="PineTree_01" type="StaticBody3D" parent="." groups=["tree_bark"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 0, 14)
 collision_layer = 1
 collision_mask = 0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Tree_01"]
-shape = SubResource("CylinderShape3D_tree")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PineTree_01"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, 0)
+shape = SubResource("CylinderShape3D_tree_col")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Tree_01" groups=["tree_bark"]]
-mesh = SubResource("CylinderMesh_tree")
+[node name="Trunk" type="MeshInstance3D" parent="PineTree_01" groups=["tree_bark"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, 0)
+mesh = SubResource("CylinderMesh_trunk_tall")
 
-[node name="Tree_02" type="StaticBody3D" parent="." groups=["tree_bark"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -14, 6, -18)
+[node name="TierLow" type="MeshInstance3D" parent="PineTree_01"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.5, 0)
+mesh = SubResource("CylinderMesh_canopy_low")
+
+[node name="TierMid" type="MeshInstance3D" parent="PineTree_01"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.5, 0)
+mesh = SubResource("CylinderMesh_canopy_mid")
+
+[node name="TierTop" type="MeshInstance3D" parent="PineTree_01"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11.5, 0)
+mesh = SubResource("CylinderMesh_canopy_top")
+
+[node name="PineTree_02" type="StaticBody3D" parent="." groups=["tree_bark"]]
+transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, -16, 0, -18)
 collision_layer = 1
 collision_mask = 0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Tree_02"]
-shape = SubResource("CylinderShape3D_tree")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PineTree_02"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, 0)
+shape = SubResource("CylinderShape3D_tree_col")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Tree_02" groups=["tree_bark"]]
-mesh = SubResource("CylinderMesh_tree")
+[node name="Trunk" type="MeshInstance3D" parent="PineTree_02" groups=["tree_bark"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, 0)
+mesh = SubResource("CylinderMesh_trunk_tall")
 
-[node name="Tree_03" type="StaticBody3D" parent="." groups=["tree_bark"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18, 6, -8)
+[node name="TierLow" type="MeshInstance3D" parent="PineTree_02"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.5, 0)
+mesh = SubResource("CylinderMesh_canopy_low")
+
+[node name="TierMid" type="MeshInstance3D" parent="PineTree_02"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.5, 0)
+mesh = SubResource("CylinderMesh_canopy_mid")
+
+[node name="TierTop" type="MeshInstance3D" parent="PineTree_02"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11.5, 0)
+mesh = SubResource("CylinderMesh_canopy_top")
+
+[node name="PineTree_03" type="StaticBody3D" parent="." groups=["tree_bark"]]
+transform = Transform3D(0.866025, 0, -0.5, 0, 1, 0, 0.5, 0, 0.866025, 20, 0, -12)
 collision_layer = 1
 collision_mask = 0
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Tree_03"]
-shape = SubResource("CylinderShape3D_tree")
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PineTree_03"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, 0)
+shape = SubResource("CylinderShape3D_tree_col")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Tree_03" groups=["tree_bark"]]
-mesh = SubResource("CylinderMesh_tree")
+[node name="Trunk" type="MeshInstance3D" parent="PineTree_03" groups=["tree_bark"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, 0)
+mesh = SubResource("CylinderMesh_trunk_tall")
 
-[node name="HorrorTotem" type="MeshInstance3D" parent="." groups=["sanity_horror_prop"]]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1.4, -6)
+[node name="TierLow" type="MeshInstance3D" parent="PineTree_03"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.5, 0)
+mesh = SubResource("CylinderMesh_canopy_low")
+
+[node name="TierMid" type="MeshInstance3D" parent="PineTree_03"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.5, 0)
+mesh = SubResource("CylinderMesh_canopy_mid")
+
+[node name="TierTop" type="MeshInstance3D" parent="PineTree_03"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11.5, 0)
+mesh = SubResource("CylinderMesh_canopy_top")
+
+[node name="PineTree_04" type="StaticBody3D" parent="." groups=["tree_bark"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, 22)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="PineTree_04"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, 0)
+shape = SubResource("CylinderShape3D_tree_col")
+
+[node name="Trunk" type="MeshInstance3D" parent="PineTree_04" groups=["tree_bark"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7, 0)
+mesh = SubResource("CylinderMesh_trunk_tall")
+
+[node name="TierLow" type="MeshInstance3D" parent="PineTree_04"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5.5, 0)
+mesh = SubResource("CylinderMesh_canopy_low")
+
+[node name="TierMid" type="MeshInstance3D" parent="PineTree_04"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 8.5, 0)
+mesh = SubResource("CylinderMesh_canopy_mid")
+
+[node name="TierTop" type="MeshInstance3D" parent="PineTree_04"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 11.5, 0)
+mesh = SubResource("CylinderMesh_canopy_top")
+
+[node name="FallenLog" type="StaticBody3D" parent="." groups=["tree_bark"]]
+transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 2, 0.3, 5)
+collision_layer = 1
+collision_mask = 0
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="FallenLog"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("CylinderMesh_fallen_log")
+
+[node name="MossyBoulder" type="StaticBody3D" parent="." groups=["surface_rock"]]
+transform = Transform3D(1.2, 0, 0, 0, 0.8, 0, 0, 0, 1.4, -6, 0.6, -8)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="MossyBoulder"]
+shape = SubResource("SphereShape3D_boulder_col")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="MossyBoulder"]
+mesh = SubResource("SphereMesh_boulder")
+
+[node name="CultistOccultTotem" type="Node3D" parent="." groups=["sanity_horror_prop"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 0, -16)
 visible = false
-mesh = SubResource("BoxMesh_horror_totem")
+
+[node name="MainPole" type="MeshInstance3D" parent="CultistOccultTotem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
+mesh = SubResource("CylinderMesh_totem_stick")
+
+[node name="CrossBar" type="MeshInstance3D" parent="CultistOccultTotem"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 1.8, 0)
+mesh = SubResource("CylinderMesh_totem_stick")
+mesh.height = 1.6
+
+[node name="GlowingSkull" type="MeshInstance3D" parent="CultistOccultTotem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0)
+mesh = SubResource("SphereMesh_skull")

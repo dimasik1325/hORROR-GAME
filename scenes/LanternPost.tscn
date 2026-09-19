@@ -1,0 +1,72 @@
+[gd_scene load_steps=9 format=3 uid="uid://lantern_post_horror_01"]
+
+[ext_resource type="Script" path="res://scripts/world/LanternPost.gd" id="1_post"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_timber"]
+albedo_color = Color(0.24, 0.18, 0.13, 1)
+roughness = 0.9
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_vertical_post"]
+material = SubResource("StandardMaterial3D_timber")
+top_radius = 0.1
+bottom_radius = 0.13
+height = 3.6
+
+[sub_resource type="BoxMesh" id="BoxMesh_arm"]
+material = SubResource("StandardMaterial3D_timber")
+size = Vector3(0.12, 0.12, 1.1)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lantern_metal"]
+albedo_color = Color(0.15, 0.14, 0.13, 1)
+metallic = 0.8
+roughness = 0.4
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_lantern_body"]
+material = SubResource("StandardMaterial3D_lantern_metal")
+top_radius = 0.15
+bottom_radius = 0.15
+height = 0.35
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_lantern_glow"]
+albedo_color = Color(1, 0.8, 0.45, 1)
+emission_enabled = true
+emission = Color(1, 0.72, 0.35, 1)
+emission_energy_multiplier = 3.5
+
+[sub_resource type="SphereMesh" id="SphereMesh_flame"]
+material = SubResource("StandardMaterial3D_lantern_glow")
+radius = 0.08
+height = 0.16
+
+[node name="LanternPost" type="Node3D"]
+script = ExtResource("1_post")
+
+[node name="PostMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.8, 0)
+mesh = SubResource("CylinderMesh_vertical_post")
+
+[node name="ArmMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.2, 0.45)
+mesh = SubResource("BoxMesh_arm")
+
+[node name="LanternMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.75, 0.9)
+mesh = SubResource("CylinderMesh_lantern_body")
+
+[node name="FlameCore" type="MeshInstance3D" parent="LanternMesh"]
+mesh = SubResource("SphereMesh_flame")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="LanternMesh"]
+light_color = Color(1, 0.76, 0.42, 1)
+light_energy = 3.2
+shadow_enabled = true
+shadow_bias = 0.04
+omni_range = 15.0
+omni_attenuation = 1.2
+
+[node name="SpotLight3D" type="SpotLight3D" parent="LanternMesh"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, -0.2, 0)
+light_color = Color(1, 0.82, 0.48, 1)
+light_energy = 2.4
+spot_range = 10.0
+spot_angle = 58.0
