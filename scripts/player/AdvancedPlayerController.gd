@@ -195,8 +195,9 @@ func _process_movement(delta: float) -> void:
 
 	# Оповещение подсистемы слуха монстров при беге
 	if is_sprinting and horizontal_velocity.length() > 2.5 and is_on_floor():
-		if SanityGlobalManager:
-			SanityGlobalManager.emit_noise(global_position, 16.0, &"player_sprint")
+		var sanity_mgr = get_node_or_null("/root/SanityGlobalManager")
+		if sanity_mgr and sanity_mgr.has_method("emit_noise"):
+			sanity_mgr.emit_noise(global_position, 16.0, &"player_sprint")
 
 
 # --- ПРОЦЕДУРНЫЙ ХЕДБОББИНГ И НАКЛОНЫ КАМЕРЫ ---
@@ -287,7 +288,6 @@ func _update_flashlight_visuals(delta: float) -> void:
 
 func toggle_flashlight() -> void:
 	if _current_battery <= 0.0 and not _is_flashlight_on:
-		# Попытка включить разряженный фонарик
 		if flashlight_click_audio != null:
 			flashlight_click_audio.play()
 		return
@@ -335,7 +335,7 @@ func _update_stamina(delta: float) -> void:
 				breathing_audio.volume_db = move_toward(breathing_audio.volume_db, -25.0, delta * 12.0)
 
 
-# --- ГИБРИДНАЯ СИСТЕМА ИНТЕРАКЦИЙ (RAYCAST + SHAPECAST ДЛЯ ТРАВЫ) ---
+# --- ГИБРИДНАЯ СИСТЕМА ИНТЕРАКЦИЙ ---
 func _setup_interaction_casts() -> void:
 	if interaction_ray != null:
 		interaction_ray.target_position = Vector3(0, 0, -raycast_interaction_distance)
@@ -352,13 +352,13 @@ func _setup_interaction_casts() -> void:
 func _process_interactions() -> void:
 	var detected_interactable: Interactable = null
 
-	# Приоритет 1: Прямой RayCast3D (точный выбор записок, ключей на столах)
+	# Приоритет 1: Прямой RayCast3D
 	if interaction_ray != null and interaction_ray.is_colliding():
 		var collider: Object = interaction_ray.get_collider()
 		if collider is Interactable and (collider as Interactable).is_interactable:
 			detected_interactable = collider as Interactable
 
-	# Приоритет 2: Объемный ShapeCast3D (подбор батареек и предметов, скрытых в густой траве)
+	# Приоритет 2: Объемный ShapeCast3D
 	if detected_interactable == null and interaction_shape != null and interaction_shape.is_colliding():
 		var closest_dist: float = 999.0
 		for i in range(interaction_shape.get_collision_count()):
@@ -433,8 +433,9 @@ func _trigger_footstep(is_sprinting: bool) -> void:
 	
 	# Излучение акустического события для ИИ монстра
 	var noise_radius: float = 14.0 if is_sprinting else 4.0
-	if SanityGlobalManager:
-		SanityGlobalManager.emit_noise(global_position, noise_radius, &"footstep")
+	var sanity_mgr = get_node_or_null("/root/SanityGlobalManager")
+	if sanity_mgr and sanity_mgr.has_method("emit_noise"):
+		sanity_mgr.emit_noise(global_position, noise_radius, &"footstep")
 
 
 # --- ИНВЕНТАРЬ И УТИЛИТЫ ---

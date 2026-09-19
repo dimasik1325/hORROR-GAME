@@ -41,8 +41,6 @@ var _loading_chunks: Dictionary = {}
 # Очередь на инстанцирование в главном потоке: Array[Dictionary]
 var _instantiation_queue: Array[Dictionary] = []
 
-# ID задач пула WorkerThreadPool
-var _active_worker_tasks: Array[int] = []
 var _is_horror_layer_active: bool = false
 var _max_instantiations_per_frame: int = 2
 
@@ -104,7 +102,6 @@ func _request_chunk_load(coord: Vector2i) -> void:
 	
 	if not ResourceLoader.exists(chunk_path):
 		if fallback_chunk_scene != null:
-			# Используем фоллбэк процедурный чанк
 			_instantiation_queue.append({
 				"coord": coord,
 				"packed_scene": fallback_chunk_scene
@@ -141,7 +138,7 @@ func _poll_loading_resources() -> void:
 		_loading_chunks.erase(coord)
 
 
-# --- ДОЗИРОВАННОЕ ИНСТАНЦИРОВАНИЕ (БЮДЖЕТ КАДРА) ---
+# --- ДОЗИРОВАННОЕ ИНСТАНЦИРОВАНИЕ ---
 func _process_instantiation_queue() -> void:
 	var instantiations_this_frame: int = 0
 
@@ -150,7 +147,6 @@ func _process_instantiation_queue() -> void:
 		var coord: Vector2i = item["coord"]
 		var scene: PackedScene = item["packed_scene"]
 
-		# Если игрок уже убежал слишком далеко, пока ресурс грузился
 		var dist_to_player: float = (Vector2(coord) - Vector2(_current_player_chunk)).length()
 		if dist_to_player > float(unload_radius):
 			continue
@@ -161,7 +157,6 @@ func _process_instantiation_queue() -> void:
 			chunk_instance.global_position = Vector3(coord.x * chunk_size, 0.0, coord.y * chunk_size)
 			_active_chunks[coord] = chunk_instance
 			
-			# Применение текущей маски Безумия к новым объектам чанка
 			_apply_sanity_layer_to_chunk(chunk_instance, _is_horror_layer_active)
 			chunk_loaded.emit(coord, chunk_instance)
 
@@ -176,10 +171,11 @@ func _unload_chunk(coord: Vector2i) -> void:
 		chunk_instance.queue_free()
 
 
-# --- ДИНАМИЧЕСКАЯ СМЕНА СЛОЕВ БЕЗУМИЯ (VISUAL LAYERS И ХОРРОР-ОБЪЕКТЫ) ---
+# --- ДИНАМИЧЕСКАЯ СМЕНА СЛОЕВ БЕЗУМИЯ ---
 func _connect_to_sanity_manager() -> void:
-	if SanityGlobalManager:
-		SanityGlobalManager.sanity_changed.connect(_on_sanity_value_changed)
+	var sanity_mgr = get_node_or_null("/root/SanityGlobalManager")
+	if sanity_mgr and sanity_mgr.has_signal("sanity_changed"):
+		sanity_mgr.sanity_changed.connect(_on_sanity_value_changed)
 
 
 func _on_sanity_value_changed(new_sanity: float, _delta: float) -> void:
@@ -191,29 +187,24 @@ func _on_sanity_value_changed(new_sanity: float, _delta: float) -> void:
 
 
 func _update_all_active_chunks_sanity(show_horror: bool) -> void:
-	# Фоновая мутация визуальных слоев
 	for chunk_node in _active_chunks.values():
 		if is_instance_valid(chunk_node):
 			_apply_sanity_layer_to_chunk(chunk_node, show_horror)
 
 
 func _apply_sanity_layer_to_chunk(chunk: Node3D, show_horror: bool) -> void:
-	# Рекурсивный обход узлов чанка
 	var nodes_to_check: Array[Node] = [chunk]
 
 	while not nodes_to_check.is_empty():
 		var current: Node = nodes_to_check.pop_back()
 		
-		# Если узел помечен группой horror_manifestation
 		if current.is_in_group("sanity_horror_prop"):
 			if current is VisualInstance3D:
 				(current as VisualInstance3D).visible = show_horror
 				(current as VisualInstance3D).set_layer_mask_value(horror_visual_layer, show_horror)
 			if current is CollisionObject3D:
-				# Активация/деактивация коллизий ложных преград
 				(current as CollisionObject3D).set_collision_layer_value(1, show_horror)
 		
-		# Мутация шейдеров коры деревьев при психозе
 		if current is MeshInstance3D and current.is_in_group("tree_bark"):
 			var mesh_inst: MeshInstance3D = current as MeshInstance3D
 			for surface_idx in range(mesh_inst.get_surface_override_material_count()):

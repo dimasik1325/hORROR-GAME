@@ -1,7 +1,6 @@
-class_name SanityGlobalManager
 extends Node
 
-## Глобальный менеджер Рассудка и Психологического Хоррора (Godot 4.6-dev Autoload)
+## Глобальный менеджер Рассудка и Психологического Хоррора (Godot 4.6-dev Autoload Singleton)
 ## Управляет шкалой Безумия, сканированием освещенности игрока, динамической адаптацией 
 ## окружения (WorldEnvironment/Volumetric Fog/SDFGI) и диспетчеризацией галлюцинаций.
 
@@ -100,7 +99,7 @@ func _calculate_player_illuminance() -> void:
 		if distance > max_range:
 			continue
 
-		# Рейкаст на проверку прямой видимости источника (не перекрыт ли деревьями/камнями)
+		# Рейкаст на проверку прямой видимости источника
 		var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
 			light_pos,
 			player_head_pos,
@@ -108,7 +107,7 @@ func _calculate_player_illuminance() -> void:
 		)
 		var result: Dictionary = space_state.intersect_ray(query)
 
-		# Если путь свободен (нет окклюдеров между светом и головой игрока)
+		# Если путь свободен
 		if result.is_empty():
 			var attenuation: float = 1.0 - (distance / max_range)
 			if light is SpotLight3D:
@@ -153,7 +152,7 @@ func _update_sanity_decay(delta: float) -> void:
 
 # --- ПЛАВНАЯ ИНТЕРПОЛЯЦИЯ ОКРУЖЕНИЯ ЧЕРЕЗ TWEEN ---
 func _apply_environment_changes() -> void:
-	var insanity_factor: float = 1.0 - (current_sanity / max_sanity) # 0.0 (норма) -> 1.0 (полный психоз)
+	var insanity_factor: float = 1.0 - (current_sanity / max_sanity)
 
 	# 1. Обновление пост-процессинг шейдера
 	if postprocess_material_ref != null:
@@ -217,7 +216,6 @@ func _execute_sanity_event(event: SanityEvent) -> void:
 				whisper_node.bus = &"Ambience"
 				player_ref.get_parent().add_child(whisper_node)
 				
-				# Размещение за спиной
 				var spawn_xform: Transform3D = event.calculate_spawn_transform(player_ref.global_transform)
 				whisper_node.global_transform = spawn_xform
 				whisper_node.play()
@@ -232,7 +230,6 @@ func _execute_sanity_event(event: SanityEvent) -> void:
 
 		SanityEvent.SanityEventType.LIGHT_FLICKER:
 			if player_ref != null and player_ref.has_method("toggle_flashlight"):
-				# Кратковременный сбой фонарика
 				player_ref.set("_current_battery", maxf(0.0, player_ref.get("_current_battery") - 5.0))
 
 		_:

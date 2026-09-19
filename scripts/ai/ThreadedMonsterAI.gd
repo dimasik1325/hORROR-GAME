@@ -37,7 +37,6 @@ enum State {
 
 # --- УЗЛЫ ---
 @onready var nav_agent: NavigationAgent3D = $NavigationAgent3D
-@onready var vision_ray: RayCast3D = $Sensors/VisionRayCast
 @onready var scream_audio: AudioStreamPlayer3D = $Audio/ScreamAudio
 @onready var footsteps_audio: AudioStreamPlayer3D = $Audio/FootstepsAudio
 @onready var state_debug_label: Label3D = $StateDebugLabel
@@ -82,8 +81,9 @@ func _setup_navigation_agent() -> void:
 
 
 func _connect_noise_listener() -> void:
-	if SanityGlobalManager:
-		SanityGlobalManager.noise_emitted.connect(_on_global_noise_heard)
+	var sanity_mgr = get_node_or_null("/root/SanityGlobalManager")
+	if sanity_mgr and sanity_mgr.has_signal("noise_emitted"):
+		sanity_mgr.noise_emitted.connect(_on_global_noise_heard)
 
 
 func _physics_process(delta: float) -> void:
@@ -108,7 +108,7 @@ func _physics_process(delta: float) -> void:
 	_apply_movement_and_rotation(delta)
 
 
-# --- СЕНСОРНЫЙ АНАЛИЗ (LINE OF SIGHT И ПРОВЕРКА ОККЛЮЗИИ) ---
+# --- СЕНСОРНЫЙ АНАЛИЗ ---
 func _evaluate_sensory_perception() -> void:
 	if player_ref == null:
 		_has_line_of_sight = false
@@ -118,12 +118,10 @@ func _evaluate_sensory_perception() -> void:
 	var player_head_pos: Vector3 = player_ref.global_position + Vector3(0, 1.6, 0)
 	var distance_to_player: float = eyes_pos.distance_to(player_head_pos)
 
-	# 1. Проверка дальности зрения
 	if distance_to_player > vision_range:
 		_has_line_of_sight = false
 		return
 
-	# 2. Проверка угла конуса видимости (FOV)
 	var forward_dir: Vector3 = -global_transform.basis.z.normalized()
 	var to_player_dir: Vector3 = (player_head_pos - eyes_pos).normalized()
 	var angle_to_player: float = rad_to_deg(forward_dir.angle_to(to_player_dir))
@@ -132,17 +130,15 @@ func _evaluate_sensory_perception() -> void:
 		_has_line_of_sight = false
 		return
 
-	# 3. Физический рейкаст через DirectSpaceState на проверку блокировки деревьями/камнями
 	var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
 	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
 		eyes_pos,
 		player_head_pos,
-		1 # Слой статической геометрии и укрытий
+		1
 	)
 	var hit: Dictionary = space_state.intersect_ray(query)
 
 	if hit.is_empty():
-		# Прямой визуальный контакт подтвержден!
 		_has_line_of_sight = true
 		_last_known_player_position = player_ref.global_position
 
@@ -156,7 +152,7 @@ func _evaluate_sensory_perception() -> void:
 # --- ОБРАБОТКА ШУМА (СЛУХ) ---
 func _on_global_noise_heard(origin: Vector3, radius: float, _noise_type: StringName) -> void:
 	if current_state == State.CHASE:
-		return # Во время погони шум не отвлекает от визуального контакта
+		return
 
 	var distance: float = global_position.distance_to(origin)
 	var effective_radius: float = radius * hearing_sensitivity
@@ -199,7 +195,6 @@ func _process_state_investigate(_delta: float) -> void:
 	nav_agent.target_position = _last_known_player_position
 
 	if nav_agent.is_target_reached() or global_position.distance_to(_last_known_player_position) < 1.8:
-		# Прибыл на место шума/последней точки, но никого нет -> переход к поиску
 		_change_state(State.SEARCH)
 		return
 
@@ -212,8 +207,6 @@ func _process_state_chase(_delta: float) -> void:
 		nav_agent.target_position = player_ref.global_position
 		_move_along_nav_path(chase_speed)
 	else:
-		# МЕХАНИКА ПОТЕРИ ИЗ ВИДУ: Игрок забежал за дерево/укрытие
-		# Монстр стремительно бежит к последней известной точке
 		_change_state(State.INVESTIGATE)
 
 
@@ -221,13 +214,11 @@ func _process_state_search(delta: float) -> void:
 	_target_velocity = Vector3.ZERO
 	_search_timer -= delta
 
-	# Процедурное сканирование: вращение монстра на 360 градусов с осмотром кустов
 	_search_rotation_angle += delta * 2.2
 	var target_rotation_y: float = global_rotation.y + sin(_search_rotation_angle) * delta * 3.0
 	global_rotation.y = target_rotation_y
 
 	if _search_timer <= 0.0:
-		# Игрок успешно спрятался. Возвращение к рутинному патрулированию
 		_change_state(State.PATROL)
 
 
@@ -261,7 +252,6 @@ func _apply_movement_and_rotation(delta: float) -> void:
 	velocity.z = horiz_vel.z
 	move_and_slide()
 
-	# Плавный разворот в сторону вектора скорости
 	if horiz_vel.length_squared() > 0.1:
 		var target_look: Vector3 = -horiz_vel.normalized()
 		var target_angle: float = atan2(target_look.x, target_look.z)
