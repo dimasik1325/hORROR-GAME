@@ -1,0 +1,43 @@
+[gd_scene load_steps=4 format=3 uid="uid://weather_horror_01"]
+
+[ext_resource type="Script" path="res://scripts/world/DynamicWeatherSystem.gd" id="1_weather"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rain_drop"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.7, 0.8, 0.9, 0.4)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_rain_streak"]
+material = SubResource("StandardMaterial3D_rain_drop")
+top_radius = 0.006
+bottom_radius = 0.006
+height = 0.45
+
+[node name="WeatherSystem" type="Node3D"]
+script = ExtResource("1_weather")
+
+[node name="RainParticles" type="CPUParticles3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 0)
+amount = 250
+lifetime = 1.2
+mesh = SubResource("CylinderMesh_rain_streak")
+emission_shape = 3
+emission_box_extents = Vector3(25, 4, 25)
+direction = Vector3(-0.15, -1, 0.05)
+spread = 8.0
+gravity = Vector3(0, -18.0, 0)
+initial_velocity_min = 12.0
+initial_velocity_max = 18.0
+
+[node name="LightningLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.965926, -0.183013, 0.183013, 0, 0.707107, 0.707107, -0.258819, -0.683013, 0.683013, 0, 40, 0)
+visible = false
+light_color = Color(0.85, 0.92, 1, 1)
+light_energy = 0.0
+
+[node name="ThunderAudio" type="AudioStreamPlayer" parent="."]
+bus = &"Ambience"
+
+[node name="RainAmbientAudio" type="AudioStreamPlayer" parent="."]
+bus = &"Ambience"
+volume_db = -12.0

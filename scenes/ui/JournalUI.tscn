@@ -1,0 +1,102 @@
+[gd_scene load_steps=3 format=3 uid="uid://journal_horror_01"]
+
+[ext_resource type="Script" path="res://scripts/ui/JournalUI.gd" id="1_journal"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_journal_panel"]
+bg_color = Color(0.1, 0.08, 0.07, 0.96)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.55, 0.45, 0.3, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="JournalUI" type="CanvasLayer"]
+process_mode = 3
+layer = 105
+script = ExtResource("1_journal")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -440.0
+offset_top = -300.0
+offset_right = 440.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_journal_panel")
+
+[node name="Margin" type="MarginContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 28
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 28
+
+[node name="VBox" type="VBoxContainer" parent="PanelContainer/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="PanelContainer/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.88, 0.55, 1)
+theme_override_font_sizes/font_size = 24
+text = "ПОЛЕВОЙ ЖУРНАЛ ДЕТЕКТИВА УЭЙНА"
+horizontal_alignment = 1
+
+[node name="TabContainer" type="TabContainer" parent="PanelContainer/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Улики и Дело" type="TabBar" parent="PanelContainer/Margin/VBox/TabContainer"]
+layout_mode = 2
+
+[node name="NotesSummary" type="RichTextLabel" parent="PanelContainer/Margin/VBox/TabContainer/Улики и Дело"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+bbcode_enabled = true
+text = "Загрузка улик..."
+
+[node name="Карта Тайги" type="TabBar" parent="PanelContainer/Margin/VBox/TabContainer"]
+visible = false
+layout_mode = 2
+
+[node name="MapLabel" type="RichTextLabel" parent="PanelContainer/Margin/VBox/TabContainer/Карта Тайги"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 16.0
+offset_top = 16.0
+offset_right = -16.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+bbcode_enabled = true
+text = "[b]СХЕМА КЛЮЧЕВЫХ ЗОН УРОЧИЩА 'ЧЕРНЫЙ ОМУТ':[/b]
+
+1. [color=#ffcc66]Кордон Лесничества[/color] (Юг) — Изба, Лагерный костер, Смотровая вышка.
+2. [color=#66ccff]Болотная Топь[/color] (Юго-Запад) — Затопленная тропа, застрявший внедорожник геодезистов.
+3. [color=#ff9966]Старая Лесопилка[/color] (Восток) — Штабели вековых бревен, заброшенный навес.
+4. [color=#ff4444]Святилище Первородной Коры[/color] (Северо-Восток) — Древо-Титан, Монолиты, Ритуальный Алтарь.
+5. [color=#aa66ff]Подземный Склеп[/color] (Северо-Запад) — Запечатанные врата в корнях утеса."
+
+[node name="CloseBtn" type="Button" parent="PanelContainer/Margin/VBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "Закрыть журнал [Tab / J]"

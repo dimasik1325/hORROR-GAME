@@ -1,4 +1,4 @@
-[gd_scene load_steps=30 format=3 uid="uid://mainworld_horror_01"]
+[gd_scene load_steps=34 format=3 uid="uid://mainworld_horror_01"]
 
 [ext_resource type="Script" path="res://scripts/world/MainWorld.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/world/WorldStreamer.gd" id="2_streamer"]
@@ -22,6 +22,10 @@
 [ext_resource type="PackedScene" path="res://scenes/props/HidingSpot.tscn" id="20_hiding"]
 [ext_resource type="PackedScene" path="res://scenes/props/SanityPillsPickup.tscn" id="21_pills"]
 [ext_resource type="PackedScene" path="res://scenes/props/CryptEntrance.tscn" id="22_crypt"]
+[ext_resource type="PackedScene" path="res://scenes/props/CassettePickup.tscn" id="23_tape"]
+[ext_resource type="PackedScene" path="res://scenes/props/BioluminescentMushroom.tscn" id="24_shroom"]
+[ext_resource type="PackedScene" path="res://scenes/world/WeatherSystem.tscn" id="25_weather"]
+[ext_resource type="PackedScene" path="res://scenes/ui/JournalUI.tscn" id="26_journal"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_night"]
 sky_top_color = Color(0.04, 0.08, 0.15, 1)
@@ -109,6 +113,8 @@ directional_shadow_split_2 = 0.22
 directional_shadow_split_3 = 0.5
 directional_shadow_blend_splits = true
 
+[node name="WeatherSystem" parent="." instance=ExtResource("25_weather")]
+
 [node name="TerrainGround" type="MeshInstance3D" parent="." groups=["surface_foliage"]]
 mesh = SubResource("PlaneMesh_main_terrain")
 
@@ -188,6 +194,15 @@ transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 
 [node name="LanternPost_05" parent="." instance=ExtResource("8_lantern")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 26, 0, -38)
 
+[node name="Shroom_Swamp1" parent="." instance=ExtResource("24_shroom")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -16, 0, -38)
+
+[node name="Shroom_Swamp2" parent="." instance=ExtResource("24_shroom")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22, 0, -45)
+
+[node name="Shroom_Altar" parent="." instance=ExtResource("24_shroom")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 33, 0, -52)
+
 [node name="WorldStreamer" type="Node3D" parent="."]
 script = ExtResource("2_streamer")
 fallback_chunk_scene = ExtResource("3_chunk")
@@ -213,6 +228,8 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 1.0, -32)
 [node name="HUD" parent="." instance=ExtResource("10_hud")]
 
 [node name="PauseMenu" parent="." instance=ExtResource("11_pause")]
+
+[node name="JournalUI" parent="." instance=ExtResource("26_journal")]
 
 [node name="Interactables" type="Node3D" parent="."]
 
@@ -243,6 +260,16 @@ note_title = "Записка #4: Почерк Уэйна"
 full_text = "«Боже мой... Это мой собственный почерк. Письма, которые привели меня сюда, написал я сам. Я сам отдал приказ геодезистам принести себя в жертву. Я — Нулевой Пациент и Верховный Жрец. Я сам стер себе память...»"
 author_signature = "Детектив Уэйн"
 note_index = 4
+
+[node name="Tape_Cabin" parent="Interactables" instance=ExtResource("23_tape")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0.35, -19.4)
+tape_title = "Аудиозапись #1: Сигнал SOS с кордона"
+voice_transcript = "«[Шорох ленты, помехи]... Кордон окружен. Радиоприемник ловит голос самого следователя Уэйна из будущего... Бегите из Черного Омута!»"
+
+[node name="Tape_Jeep" parent="Interactables" instance=ExtResource("23_tape")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.0, 0.85, -41.8)
+tape_title = "Аудиозапись #2: Голоса в трясине"
+voice_transcript = "«[Бульканье болотной жижи, глухой рев 'Сплетенного']... Корни схватили машину... Оно не дает нам уйти... Простите нас...»"
 
 [node name="Battery_Cabin" parent="Interactables" instance=ExtResource("13_battery")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 0.35, -19.4)
