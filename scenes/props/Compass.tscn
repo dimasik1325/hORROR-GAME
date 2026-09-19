@@ -1,0 +1,56 @@
+[gd_scene load_steps=8 format=3 uid="uid://compass_horror_01"]
+
+[ext_resource type="Script" path="res://scripts/world/Compass.gd" id="1_compass"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_brass"]
+albedo_color = Color(0.75, 0.6, 0.25, 1)
+metallic = 0.9
+roughness = 0.3
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_compass_body"]
+material = SubResource("StandardMaterial3D_brass")
+top_radius = 0.045
+bottom_radius = 0.045
+height = 0.015
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_dial"]
+albedo_color = Color(0.9, 0.88, 0.8, 1)
+roughness = 0.8
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_dial"]
+material = SubResource("StandardMaterial3D_dial")
+top_radius = 0.04
+bottom_radius = 0.04
+height = 0.002
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_needle_red"]
+albedo_color = Color(0.9, 0.15, 0.1, 1)
+emission_enabled = true
+emission = Color(0.8, 0.1, 0.05, 1)
+emission_energy_multiplier = 1.2
+
+[sub_resource type="PrismMesh" id="PrismMesh_needle"]
+material = SubResource("StandardMaterial3D_needle_red")
+left_to_right = 0.5
+size = Vector3(0.008, 0.035, 0.002)
+
+[node name="Compass" type="Node3D"]
+script = ExtResource("1_compass")
+
+[node name="BodyMesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("CylinderMesh_compass_body")
+
+[node name="DialMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.008, 0)
+mesh = SubResource("CylinderMesh_dial")
+
+[node name="NeedlePivot" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.01, 0)
+
+[node name="NeedleNorth" type="MeshInstance3D" parent="NeedlePivot"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, -0.018)
+mesh = SubResource("PrismMesh_needle")
+
+[node name="GlassMesh" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.012, 0)
+mesh = SubResource("CylinderMesh_dial")

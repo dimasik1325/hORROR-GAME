@@ -3,7 +3,7 @@ extends CharacterBody3D
 
 ## Высокотехнологичный контроллер игрока от первого лица для "Эхо Чащи" (Godot 4.6-dev)
 ## Включает: реалистичный тактический фонарик с двойным конусом (луч + рассеянный свет),
-## физику инерции таежной грязи, процедурный хедбоббинг, 3D-модель фонаря в руках и шаги.
+## 3D-компас в руке, физику инерции таежной грязи, систему травмы и тряски камеры (Camera Shake).
 
 signal stamina_changed(current: float, max_val: float)
 signal flashlight_battery_changed(current: float, max_val: float)
@@ -45,11 +45,18 @@ signal player_stepped(surface_type: StringName, is_sprinting: bool)
 @export var camera_tilt_amount: float = 0.035
 @export var camera_tilt_speed: float = 6.0
 
+# --- ТРЯСКА КАМЕРЫ (TRAUMA SHAKE) ---
+@export_group("Травма и Тряска Камеры")
+@export var trauma_decay_rate: float = 1.2
+@export var max_shake_yaw: float = 0.06
+@export var max_shake_pitch: float = 0.06
+@export var max_shake_roll: float = 0.08
+
 # --- ФОНАРИК ---
 @export_group("Фонарик и Батарея")
 @export var max_battery_capacity: float = 100.0
-@export var battery_drain_rate: float = 0.15 # ед./сек (комфортный баланс)
-@export var max_light_energy: float = 4.2    # Яркий реалистичный световой поток
+@export var battery_drain_rate: float = 0.15 # ед./сек
+@export var max_light_energy: float = 4.2
 @export var critical_battery_threshold: float = 15.0
 @export var flashlight_sway_smoothing: float = 14.0
 
@@ -92,6 +99,8 @@ var _flicker_noise_seed: float = 0.0
 var _bob_timer: float = 0.0
 var _current_step_cycle: float = 0.0
 var _previous_step_phase: float = 0.0
+var _trauma: float = 0.0
+var _shake_seed: float = 0.0
 
 var _current_focused_interactable: Interactable = null
 var _mouse_sensitivity: float = 0.0022
@@ -128,6 +137,7 @@ func _physics_process(delta: float) -> void:
 	_update_surface_detection()
 	_process_movement(delta)
 	_process_head_bob(delta)
+	_process_camera_trauma(delta)
 	_process_flashlight_sway(delta)
 	_process_flashlight_battery(delta)
 	_process_interactions()
@@ -147,6 +157,7 @@ func _process_movement(delta: float) -> void:
 			velocity.y = jump_velocity
 			_current_stamina = maxf(0.0, _current_stamina - 10.0)
 			_stamina_timer = stamina_regen_delay
+			add_trauma(0.15)
 
 	var input_dir: Vector2 = Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	var move_direction: Vector3 = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
@@ -218,6 +229,28 @@ func _process_head_bob(delta: float) -> void:
 	if _previous_step_phase > 0.0 and current_sine_val <= 0.0:
 		_trigger_footstep(is_sprinting)
 	_previous_step_phase = current_sine_val
+
+
+# --- СИСТЕМА ТРАВМЫ И ТРЯСКИ КАМЕРЫ ---
+func add_trauma(amount: float) -> void:
+	_trauma = clampf(_trauma + amount, 0.0, 1.0)
+
+
+func _process_camera_trauma(delta: float) -> void:
+	if _trauma <= 0.0:
+		return
+
+	_trauma = maxf(0.0, _trauma - (trauma_decay_rate * delta))
+	_shake_seed += delta * 45.0
+	
+	var shake: float = _trauma * _trauma
+	var shake_yaw: float = sin(_shake_seed * 1.1) * max_shake_yaw * shake
+	var shake_pitch: float = cos(_shake_seed * 1.4) * max_shake_pitch * shake
+	var shake_roll: float = sin(_shake_seed * 0.8) * max_shake_roll * shake
+
+	camera.rotation.y += shake_yaw
+	camera.rotation.x += shake_pitch
+	camera.rotation.z += shake_roll
 
 
 func _process_flashlight_sway(delta: float) -> void:

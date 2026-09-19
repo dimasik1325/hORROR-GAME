@@ -1,6 +1,7 @@
-[gd_scene load_steps=10 format=3 uid="uid://player_horror_01"]
+[gd_scene load_steps=11 format=3 uid="uid://player_horror_01"]
 
 [ext_resource type="Script" path="res://scripts/player/AdvancedPlayerController.gd" id="1_controller"]
+[ext_resource type="PackedScene" path="res://scenes/props/Compass.tscn" id="2_compass"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_player"]
 radius = 0.4
@@ -59,6 +60,9 @@ current = true
 fov = 78.0
 near = 0.05
 far = 400.0
+
+[node name="Compass" parent="Head/Camera3D" instance=ExtResource("2_compass")]
+transform = Transform3D(0.965926, 0.12941, -0.224144, 0, 0.866025, 0.5, 0.258819, -0.482963, 0.836516, -0.22, -0.18, -0.36)
 
 [node name="FlashlightPivot" type="Node3D" parent="Head/Camera3D"]
 

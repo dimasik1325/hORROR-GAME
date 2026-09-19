@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://mainworld_horror_01"]
+[gd_scene load_steps=30 format=3 uid="uid://mainworld_horror_01"]
 
 [ext_resource type="Script" path="res://scripts/world/MainWorld.gd" id="1_main"]
 [ext_resource type="Script" path="res://scripts/world/WorldStreamer.gd" id="2_streamer"]
@@ -19,6 +19,9 @@
 [ext_resource type="PackedScene" path="res://scenes/props/MegalithStone.tscn" id="17_megalith"]
 [ext_resource type="PackedScene" path="res://scenes/props/TitanTree.tscn" id="18_titantree"]
 [ext_resource type="PackedScene" path="res://scenes/props/Altar.tscn" id="19_altar"]
+[ext_resource type="PackedScene" path="res://scenes/props/HidingSpot.tscn" id="20_hiding"]
+[ext_resource type="PackedScene" path="res://scenes/props/SanityPillsPickup.tscn" id="21_pills"]
+[ext_resource type="PackedScene" path="res://scenes/props/CryptEntrance.tscn" id="22_crypt"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_night"]
 sky_top_color = Color(0.04, 0.08, 0.15, 1)
@@ -75,7 +78,7 @@ roughness = 0.92
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_main_terrain"]
 material = SubResource("StandardMaterial3D_clearing_ground")
-size = Vector2(220, 220)
+size = Vector2(240, 240)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_trail_dirt"]
 albedo_color = Color(0.24, 0.18, 0.12, 1)
@@ -145,6 +148,18 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, -56)
 
 [node name="Altar" parent="." instance=ExtResource("19_altar")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30, 0, -48)
+
+[node name="Crypt" parent="." instance=ExtResource("22_crypt")]
+transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, -42, 0, -55)
+
+[node name="HidingSpot_Cabin" parent="." instance=ExtResource("20_hiding")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8, 0, -24)
+
+[node name="HidingSpot_Sawmill" parent="." instance=ExtResource("20_hiding")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 42, 0, -16)
+
+[node name="HidingSpot_Swamp" parent="." instance=ExtResource("20_hiding")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12, 0, -45)
 
 [node name="Megalith1" parent="." instance=ExtResource("17_megalith")]
 transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, 22, 0, -44)
@@ -244,6 +259,15 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -21.2, 0.85, -42.5)
 [node name="Battery_Sawmill" parent="Interactables" instance=ExtResource("13_battery")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 35.5, 0.45, -13.5)
 
+[node name="Pills_Cabin" parent="Interactables" instance=ExtResource("21_pills")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.4, 0.35, -20.2)
+
+[node name="Pills_Watchtower" parent="Interactables" instance=ExtResource("21_pills")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -25.2, 8.0, 1.2)
+
+[node name="Pills_Jeep" parent="Interactables" instance=ExtResource("21_pills")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -19.4, 0.85, -40.6)
+
 [node name="Waypoints" type="Node3D" parent="."]
 
 [node name="WP_Cabin" type="Node3D" parent="Waypoints"]
@@ -263,3 +287,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0, -12)
 
 [node name="WP_Altar" type="Node3D" parent="Waypoints"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 28, 0, -44)
+
+[node name="WP_Crypt" type="Node3D" parent="Waypoints"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -38, 0, -50)

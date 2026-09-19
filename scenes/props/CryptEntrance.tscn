@@ -1,0 +1,59 @@
+[gd_scene load_steps=8 format=3 uid="uid://crypt_horror_01"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_crypt_rock"]
+albedo_color = Color(0.12, 0.13, 0.15, 1)
+roughness = 0.95
+
+[sub_resource type="BoxMesh" id="BoxMesh_cliff_face"]
+material = SubResource("StandardMaterial3D_crypt_rock")
+size = Vector3(12.0, 7.0, 3.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_crypt_portal"]
+albedo_color = Color(0.01, 0.01, 0.02, 1)
+roughness = 1.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_portal_opening"]
+material = SubResource("StandardMaterial3D_crypt_portal")
+size = Vector3(3.2, 4.2, 3.6)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_beams"]
+albedo_color = Color(0.26, 0.18, 0.12, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_beam"]
+material = SubResource("StandardMaterial3D_beams")
+size = Vector3(0.3, 4.6, 0.3)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_crypt_col"]
+size = Vector3(12.2, 7.2, 3.6)
+
+[node name="CryptEntrance" type="StaticBody3D"]
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
+shape = SubResource("BoxShape3D_crypt_col")
+
+[node name="CliffFace" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.5, 0)
+mesh = SubResource("BoxMesh_cliff_face")
+
+[node name="PortalOpening" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0.1)
+mesh = SubResource("BoxMesh_portal_opening")
+
+[node name="BeamLeft" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.8, 2.3, 1.8)
+mesh = SubResource("BoxMesh_beam")
+
+[node name="BeamRight" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.8, 2.3, 1.8)
+mesh = SubResource("BoxMesh_beam")
+
+[node name="CryptGlowLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, -0.5)
+light_color = Color(0.6, 0.15, 0.8, 1)
+light_energy = 2.4
+shadow_enabled = true
+omni_range = 10.0
