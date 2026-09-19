@@ -2,30 +2,31 @@ class_name ThreadedMonsterAI
 extends CharacterBody3D
 
 ## Искусственный Интеллект лесного чудовища "Сплетенный" (Godot 4.6-dev)
-## Реализует многопоточную навигацию с динамическим избеганием препятствий (RVO2), 
-## сенсорные системы зрения/слуха, механику потери из виду и процедурный поиск.
+## Включает: FSM, систему преследования, динамический авойданс и механику атаки/скримера при сближении.
 
 enum State {
 	IDLE,        ## Ожидание/засада в чаще
 	PATROL,      ## Обход контрольных точек лесного биома
 	INVESTIGATE, ## Проверка источника подозрительного шума или последнего места видимости
 	CHASE,       ## Прямое агрессивное преследование игрока
-	SEARCH       ## Процедурное сканирование сектора после потери цели (5 сек)
+	SEARCH,      ## Процедурное сканирование сектора после потери цели (5 сек)
+	ATTACK       ## Скример и атака на поражение
 }
 
 # --- НАСТРОЙКИ СКОРОСТИ И ФИЗИКИ ---
 @export_group("Движение")
 @export var patrol_speed: float = 2.4
 @export var investigate_speed: float = 4.2
-@export var chase_speed: float = 6.8
-@export var acceleration: float = 8.0
-@export var rotation_speed: float = 5.0
+@export var chase_speed: float = 7.0
+@export var acceleration: float = 8.5
+@export var rotation_speed: float = 6.0
 @export var gravity: float = 9.81
+@export var attack_reach_distance: float = 1.9
 
 # --- СЕНСОРНЫЕ НАСТРОЙКИ ---
 @export_group("Зрение и Слух")
-@export var vision_range: float = 28.0
-@export var vision_angle_degrees: float = 110.0
+@export var vision_range: float = 32.0
+@export var vision_angle_degrees: float = 120.0
 @export var hearing_sensitivity: float = 1.0
 @export var search_duration: float = 5.0
 
@@ -58,6 +59,7 @@ var _search_rotation_angle: float = 0.0
 var _last_known_player_position: Vector3 = Vector3.ZERO
 var _has_line_of_sight: bool = false
 var _target_velocity: Vector3 = Vector3.ZERO
+var _has_triggered_jumpscare: bool = false
 
 
 func _ready() -> void:
@@ -76,7 +78,6 @@ func _setup_navigation_agent() -> void:
 	nav_agent.radius = 0.9
 	nav_agent.max_speed = chase_speed
 	
-	# Подключение многопоточного коллбэка избегания динамических препятствий
 	nav_agent.velocity_computed.connect(_on_safe_velocity_computed)
 
 
@@ -104,17 +105,19 @@ func _physics_process(delta: float) -> void:
 			_process_state_chase(delta)
 		State.SEARCH:
 			_process_state_search(delta)
+		State.ATTACK:
+			_process_state_attack(delta)
 
 	_apply_movement_and_rotation(delta)
 
 
 # --- СЕНСОРНЫЙ АНАЛИЗ ---
 func _evaluate_sensory_perception() -> void:
-	if player_ref == null:
+	if player_ref == null or current_state == State.ATTACK:
 		_has_line_of_sight = false
 		return
 
-	var eyes_pos: Vector3 = global_position + Vector3(0, 1.8, 0)
+	var eyes_pos: Vector3 = global_position + Vector3(0, 2.0, 0)
 	var player_head_pos: Vector3 = player_ref.global_position + Vector3(0, 1.6, 0)
 	var distance_to_player: float = eyes_pos.distance_to(player_head_pos)
 
@@ -134,7 +137,7 @@ func _evaluate_sensory_perception() -> void:
 	var query: PhysicsRayQueryParameters3D = PhysicsRayQueryParameters3D.create(
 		eyes_pos,
 		player_head_pos,
-		1
+		1 # Слой мира
 	)
 	var hit: Dictionary = space_state.intersect_ray(query)
 
@@ -151,7 +154,7 @@ func _evaluate_sensory_perception() -> void:
 
 # --- ОБРАБОТКА ШУМА (СЛУХ) ---
 func _on_global_noise_heard(origin: Vector3, radius: float, _noise_type: StringName) -> void:
-	if current_state == State.CHASE:
+	if current_state == State.CHASE or current_state == State.ATTACK:
 		return
 
 	var distance: float = global_position.distance_to(origin)
@@ -174,6 +177,7 @@ func _process_state_idle(delta: float) -> void:
 
 func _process_state_patrol(_delta: float) -> void:
 	if patrol_waypoints.is_empty():
+		# Если точек нет — патрулируем по радиусу вокруг старта
 		_change_state(State.IDLE)
 		return
 
@@ -202,12 +206,32 @@ func _process_state_investigate(_delta: float) -> void:
 
 
 func _process_state_chase(_delta: float) -> void:
-	if _has_line_of_sight and player_ref != null:
-		_last_known_player_position = player_ref.global_position
-		nav_agent.target_position = player_ref.global_position
-		_move_along_nav_path(chase_speed)
-	else:
-		_change_state(State.INVESTIGATE)
+	if player_ref != null:
+		var distance_to_player = global_position.distance_to(player_ref.global_position)
+		
+		# МЕХАНИКА СКРИМЕРА / НАПАДЕНИЯ: Когда монстр догнал игрока!
+		if distance_to_player <= attack_reach_distance and not _has_triggered_jumpscare:
+			_change_state(State.ATTACK)
+			return
+
+		if _has_line_of_sight:
+			_last_known_player_position = player_ref.global_position
+			nav_agent.target_position = player_ref.global_position
+			_move_along_nav_path(chase_speed)
+		else:
+			_change_state(State.INVESTIGATE)
+
+
+func _process_state_attack(_delta: float) -> void:
+	_target_velocity = Vector3.ZERO
+	
+	if not _has_triggered_jumpscare:
+		_has_triggered_jumpscare = true
+		_trigger_chase_scream()
+		
+		var game_mgr = get_node_or_null("/root/GameManager")
+		if game_mgr and game_mgr.has_method("trigger_monster_jumpscare"):
+			game_mgr.trigger_monster_jumpscare(self)
 
 
 func _process_state_search(delta: float) -> void:
@@ -222,7 +246,7 @@ func _process_state_search(delta: float) -> void:
 		_change_state(State.PATROL)
 
 
-# --- НАВИГАЦИЯ И ПЕРЕМЕЩЕНИЕ С АВОЙДАНСОМ (RVO2) ---
+# --- НАВИГАЦИЯ И ПЕРЕМЕЩЕНИЕ С АВОЙДАНСОМ ---
 func _move_along_nav_path(speed: float) -> void:
 	if nav_agent.is_navigation_finished():
 		_target_velocity = Vector3.ZERO
@@ -258,7 +282,6 @@ func _apply_movement_and_rotation(delta: float) -> void:
 		global_rotation.y = lerp_angle(global_rotation.y, target_angle, rotation_speed * delta)
 
 
-# --- СМЕНА СОСТОЯНИЙ И УТИЛИТЫ ---
 func _change_state(new_state: State) -> void:
 	current_state = new_state
 
@@ -273,6 +296,8 @@ func _change_state(new_state: State) -> void:
 			nav_agent.max_speed = chase_speed
 		State.INVESTIGATE:
 			nav_agent.max_speed = investigate_speed
+		State.ATTACK:
+			nav_agent.max_speed = 0.0
 		_:
 			pass
 

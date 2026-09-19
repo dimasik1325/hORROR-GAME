@@ -1,0 +1,191 @@
+[gd_scene load_steps=5 format=3 uid="uid://mainmenu_horror_01"]
+
+[ext_resource type="Script" path="res://scripts/ui/MainMenu.gd" id="1_menu"]
+[ext_resource type="PackedScene" path="res://scenes/ui/SettingsMenu.tscn" id="2_settings"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_btn_normal"]
+bg_color = Color(0.08, 0.1, 0.14, 0.8)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.25, 0.35, 0.45, 0.8)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_controls_panel"]
+bg_color = Color(0.08, 0.09, 0.12, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.5, 0.6, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_menu")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.04, 0.06, 1)
+
+[node name="HeaderContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -400.0
+offset_top = 80.0
+offset_right = 400.0
+offset_bottom = 220.0
+grow_horizontal = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="HeaderContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.92, 0.94, 0.96, 1)
+theme_override_colors/font_shadow_color = Color(0.6, 0.1, 0.1, 0.8)
+theme_override_constants/shadow_offset_x = 4
+theme_override_constants/shadow_offset_y = 4
+theme_override_font_sizes/font_size = 58
+text = "ЭХО ЧАЩИ"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="HeaderContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.65, 0.7, 0.8, 0.9)
+theme_override_font_sizes/font_size = 18
+text = "ТАЙНА ИСЧЕЗНУВШЕЙ ЭКСПЕДИЦИИ • ДЕТЕКТИВ УЭЙН"
+horizontal_alignment = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -160.0
+offset_top = -20.0
+offset_right = 160.0
+offset_bottom = 240.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 14
+
+[node name="PlayButton" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+text = "НОВАЯ ИГРА"
+
+[node name="SettingsButton" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+text = "НАСТРОЙКИ"
+
+[node name="ControlsButton" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+text = "УПРАВЛЕНИЕ"
+
+[node name="QuitButton" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_btn_normal")
+text = "ВЫХОД"
+
+[node name="VersionLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -260.0
+offset_top = -36.0
+offset_right = -20.0
+offset_bottom = -16.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.4, 0.45, 0.55, 0.7)
+theme_override_font_sizes/font_size = 13
+text = "Godot 4.6-dev | Build v1.2"
+horizontal_alignment = 2
+
+[node name="ControlsDialog" type="PanelContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -200.0
+offset_right = 300.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_controls_panel")
+
+[node name="Margin" type="MarginContainer" parent="ControlsDialog"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="ControlsDialog/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Title" type="Label" parent="ControlsDialog/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.45, 1)
+theme_override_font_sizes/font_size = 22
+text = "СХЕМА УПРАВЛЕНИЯ"
+horizontal_alignment = 1
+
+[node name="ControlsList" type="Label" parent="ControlsDialog/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.85, 0.88, 0.92, 1)
+theme_override_font_sizes/font_size = 16
+text = "[W, A, S, D] — Передвижение по лесу
+[Shift] — Спринт / Быстрый бег
+[F] — Включить / Выключить тактический фонарь
+[E] — Взаимодействие (подбор записок, батарей)
+[Пробел] — Прыжок
+[C / Ctrl] — Присесть
+[Esc] — Меню паузы и настройки"
+
+[node name="CloseButton" type="Button" parent="ControlsDialog/Margin/VBox"]
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+text = "Понятно"
+
+[node name="SettingsMenu" parent="." instance=ExtResource("2_settings")]
+visible = false
+layout_mode = 1

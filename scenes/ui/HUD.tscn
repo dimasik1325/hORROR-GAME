@@ -1,0 +1,357 @@
+[gd_scene load_steps=7 format=3 uid="uid://hud_horror_01"]
+
+[ext_resource type="Script" path="res://scripts/ui/HUD.gd" id="1_hud"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.06, 0.08, 0.1, 0.75)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.25, 0.35, 0.45, 0.8)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sanity"]
+bg_color = Color(0.75, 0.15, 0.15, 0.9)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_stamina"]
+bg_color = Color(0.2, 0.65, 0.3, 0.9)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_battery"]
+bg_color = Color(0.85, 0.7, 0.15, 0.9)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_note_paper"]
+bg_color = Color(0.12, 0.1, 0.08, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.65, 0.55, 0.35, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1_hud")
+
+[node name="ObjectivePanel" type="PanelContainer" parent="."]
+offset_left = 24.0
+offset_top = 24.0
+offset_right = 460.0
+offset_bottom = 140.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBox" type="VBoxContainer" parent="ObjectivePanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TitleLabel" type="Label" parent="ObjectivePanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.45, 1)
+theme_override_font_sizes/font_size = 18
+text = "ТЕКУЩАЯ ЗАДАЧА: Исследовать кордон"
+
+[node name="DescLabel" type="Label" parent="ObjectivePanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.85, 0.9, 0.9)
+theme_override_font_sizes/font_size = 14
+text = "Осмотрите избу и найдите записки пропавшей экспедиции."
+autowrap_mode = 2
+
+[node name="ProgressLabel" type="Label" parent="ObjectivePanel/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.9, 0.5, 1)
+theme_override_font_sizes/font_size = 14
+text = "Собрано записок: 0 / 4"
+
+[node name="ControlsTip" type="Label" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -340.0
+offset_top = 24.0
+offset_right = -24.0
+offset_bottom = 120.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(0.7, 0.75, 0.85, 0.75)
+theme_override_font_sizes/font_size = 13
+text = "УПРАВЛЕНИЕ:
+[WASD] - Передвижение
+[Shift] - Спринт / Бег
+[F] - Фонарик (вкл/выкл)
+[E] - Взаимодействие / Подбор
+[Esc] - Меню паузы и настройки"
+horizontal_alignment = 2
+
+[node name="StatusContainer" type="Control" parent="."]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = -140.0
+offset_right = 360.0
+offset_bottom = -24.0
+grow_vertical = 0
+
+[node name="VBox" type="VBoxContainer" parent="StatusContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="SanityContainer" type="HBoxContainer" parent="StatusContainer/VBox"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="StatusContainer/VBox/SanityContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "РАССУДОК:"
+
+[node name="SanityBar" type="ProgressBar" parent="StatusContainer/VBox/SanityContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_styles/fill = SubResource("StyleBoxFlat_sanity")
+value = 100.0
+show_percentage = false
+
+[node name="StaminaContainer" type="HBoxContainer" parent="StatusContainer/VBox"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="StatusContainer/VBox/StaminaContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "ВЫНОСЛИВОСТЬ:"
+
+[node name="StaminaBar" type="ProgressBar" parent="StatusContainer/VBox/StaminaContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_styles/fill = SubResource("StyleBoxFlat_stamina")
+value = 100.0
+show_percentage = false
+
+[node name="BatteryContainer" type="HBoxContainer" parent="StatusContainer/VBox"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="StatusContainer/VBox/BatteryContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+text = "БАТАРЕЯ [F]:"
+
+[node name="BatteryBar" type="ProgressBar" parent="StatusContainer/VBox/BatteryContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+theme_override_styles/fill = SubResource("StyleBoxFlat_battery")
+value = 100.0
+show_percentage = false
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = -60.0
+offset_right = 200.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Crosshair" type="ColorRect" parent="CenterContainer"]
+custom_minimum_size = Vector2(4, 4)
+layout_mode = 2
+color = Color(1, 1, 1, 0.6)
+
+[node name="PromptLabel" type="Label" parent="CenterContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.95, 0.7, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.9)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 16
+text = "[E] Осмотреть"
+horizontal_alignment = 1
+
+[node name="NotificationLabel" type="Label" parent="."]
+visible = false
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -250.0
+offset_top = -180.0
+offset_right = 250.0
+offset_bottom = -140.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.4, 1, 0.5, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = "Уведомление"
+horizontal_alignment = 1
+
+[node name="NoteDialog" type="PanelContainer" parent="."]
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -240.0
+offset_right = 320.0
+offset_bottom = 240.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_note_paper")
+
+[node name="Margin" type="MarginContainer" parent="NoteDialog"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="VBox" type="VBoxContainer" parent="NoteDialog/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="NoteTitle" type="Label" parent="NoteDialog/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.5, 1)
+theme_override_font_sizes/font_size = 20
+text = "Записка"
+horizontal_alignment = 1
+
+[node name="NoteAuthor" type="Label" parent="NoteDialog/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.65, 0.55, 0.9)
+theme_override_font_sizes/font_size = 14
+text = "Автор: Неизвестный"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="NoteDialog/Margin/VBox"]
+layout_mode = 2
+
+[node name="NoteText" type="RichTextLabel" parent="NoteDialog/Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.9, 0.88, 0.82, 1)
+theme_override_font_sizes/normal_font_size = 16
+text = "Текст записки..."
+
+[node name="CloseHint" type="Label" parent="NoteDialog/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 0.8)
+theme_override_font_sizes/font_size = 13
+text = "[E / Esc / Пробел] Закрыть документ"
+horizontal_alignment = 1
+
+[node name="JumpscareOverlay" type="ColorRect" parent="."]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.6, 0.02, 0.02, 0.85)
+
+[node name="MonsterFaceLabel" type="Label" parent="JumpscareOverlay"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -80.0
+offset_right = 400.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 0.95, 0.9, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 4
+theme_override_constants/shadow_offset_y = 4
+theme_override_font_sizes/font_size = 48
+text = "!!! СПЛЕТЕННЫЙ НАСТИГ ВАС !!!"
+horizontal_alignment = 1
+
+[node name="DeathScreen" type="ColorRect" parent="."]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.02, 0.02, 0.95)
+
+[node name="VBox" type="VBoxContainer" parent="DeathScreen"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -140.0
+offset_right = 220.0
+offset_bottom = 140.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 18
+
+[node name="Title" type="Label" parent="DeathScreen/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.15, 0.1, 1)
+theme_override_font_sizes/font_size = 38
+text = "ВЫ ПОГИБЛИ"
+horizontal_alignment = 1
+
+[node name="Subtitle" type="Label" parent="DeathScreen/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 16
+text = "Ваш рассудок и тело поглощены Корнями Первородной Коры."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="RetryButton" type="Button" parent="DeathScreen/VBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Попробовать снова"
+
+[node name="MenuButton" type="Button" parent="DeathScreen/VBox"]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Главное меню"

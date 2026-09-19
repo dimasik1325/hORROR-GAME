@@ -1,0 +1,38 @@
+[gd_scene load_steps=6 format=3 uid="uid://note_pickup_horror_01"]
+
+[ext_resource type="Script" path="res://scripts/world/NotePickup.gd" id="1_note"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_note"]
+size = Vector3(0.5, 0.2, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_paper"]
+albedo_color = Color(0.9, 0.86, 0.76, 1)
+roughness = 0.8
+emission_enabled = true
+emission = Color(0.8, 0.75, 0.6, 1)
+emission_energy_multiplier = 0.4
+
+[sub_resource type="BoxMesh" id="BoxMesh_paper"]
+material = SubResource("StandardMaterial3D_paper")
+size = Vector3(0.32, 0.015, 0.42)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_glow"]
+shading_mode = 0
+albedo_color = Color(1, 0.9, 0.6, 0.35)
+
+[node name="NotePickup" type="CollisionObject3D"]
+collision_layer = 4
+collision_mask = 0
+script = ExtResource("1_note")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_note")
+
+[node name="PaperMesh" type="MeshInstance3D" parent="."]
+mesh = SubResource("BoxMesh_paper")
+
+[node name="GlowLight" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.15, 0)
+light_color = Color(1, 0.92, 0.75, 1)
+light_energy = 0.6
+omni_range = 2.5
